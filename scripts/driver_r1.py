@@ -31,6 +31,7 @@ class Robot:
     exp = 0.3
     rcvCnt = 0
     isAutoMode = False
+    #initialize data
     enc_L = 0
     enc_R = 0
     odo_L = 0
@@ -44,6 +45,7 @@ class Robot:
         print(self.ser.name)         # check which port was really used
         self.joyAxes = [0,0,0,0,0,0,0,0]
         self.joyButtons = [0,0,0,0,0,0,0,0]
+        # Configure data output
         if self.ser.isOpen():
             print("Serial Open")
             self.resetODO()
@@ -52,8 +54,6 @@ class Robot:
             self.setREGI(2,'QRPM')
             self.setSPERI(20)
             self.setPEEN(1)
-            #msg = '$SREGI,0,ENCOD'
-            #self.ser.write(msg+"\r"+"\n")
             
         self.reset_odometry()   
         rospy.init_node('omoros', anonymous=True)
@@ -69,7 +69,6 @@ class Robot:
         #self.pub_joints = rospy.Publisher("joint_state", JointState, queue_size=10)
         
         rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
-        #rospy.Subscriber("my_classifier", Num, callback2)
         rospy.Timer(rospy.Duration(0.1), self.joytimer)
         rospy.Timer(rospy.Duration(0.01), self.reader)
         
@@ -94,7 +93,6 @@ class Robot:
 
     def reader(self, event):
         reader = self.ser_io.readline()
-        #print(reader)
         if reader:
             packet = reader.split(",")
             try:
@@ -102,9 +100,7 @@ class Robot:
                 if header.startswith('CVW'):
                     self.Vl = int(packet[1])
                     self.Vr = int(packet[2])
-                    #print('{:04d},{:04d}'.format(encoderL, encoderR))
-                    # publish motor status, including encoder value        
-                    #print('{:04d},{:04d}'.format(self.Vl, self.Vr))
+
                 elif header.startswith('QENCOD'):
                     self.enc_L = int(packet[1])
                     self.enc_R = int(packet[2])
@@ -117,7 +113,7 @@ class Robot:
                 elif header.startswith('QRPM'):
                     self.RPM_L = int(packet[1])
                     self.RPM_R = int(packet[2])
-                    print('{:04d},{:04d}'.format(self.RPM_L, self.RPM_R))
+                    #print('{:04d},{:04d}'.format(self.RPM_L, self.RPM_R))
             except:
                 print('Wrong packet')
                 pass
@@ -130,12 +126,7 @@ class Robot:
             
                 
     def joytimer(self, event):
-        #global joyAxes
-        #global joyButtons
-        #global isAutoMode
         if self.isAutoMode!= True:
-            #joy_v = joyAxes[3]
-            #joy_w = joyAxes[2]
             self.joy_v = self.joyAxes[1]
             self.joy_w = self.joyAxes[0]
             #print "Joy mode: {:.2f} {:.2f} ".format(joy_v, joy_w)
@@ -154,20 +145,16 @@ class Robot:
             self.joy_w = (1-self.exp) * self.joy_w + (self.exp) * self.joy_w * self.joy_w * self.joy_w
 
         # Apply max wheel RPM to the left and right wheel
-        #Vl = (joy_v + joy_w/2) * rpm_max
         Vl = self.joy_v * self.rpm_max
         Vr = self.joy_w * self.rpm_max
         
         # Make a serial message to be sent to motor driver unit
         str = '$CVW,{:.0f},{:.0f}'.format(Vl,Vr)
         #print "$CVW: {:.0f} {:.0f} ".format(Vl, Vr)
-
         if self.ser.isOpen():
             self.ser.write(str+"\r"+"\n")
             
     def reset_odometry(self):
-        #self.g.offset_motor_encoder(self.ML, self.g.get_motor_encoder(self.ML))
-        #self.g.offset_motor_encoder(self.MR, self.g.get_motor_encoder(self.MR))
         self.last_encoders = {'l': 0, 'r': 0}
         self.pose = PoseWithCovariance()
         self.pose.pose.orientation.w = 1
