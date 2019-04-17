@@ -13,7 +13,7 @@ from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
 from geometry_msgs.msg import TransformStamped
 
 from nav_msgs.msg import Odometry
-from drive_r1.msg import R1MotorStatusLR, R1MotorStatus
+from omoros.msg import R1MotorStatusLR, R1MotorStatus
 #from tf.transformations import quaternion_about_axis
 #from tf.broadcaster import TransformBroadcaster
 from copy import copy, deepcopy
@@ -31,6 +31,14 @@ class Robot:
     exp = 0.3
     rcvCnt = 0
     isAutoMode = False
+    enc_L = 0
+    enc_R = 0
+    odo_L = 0
+    odo_R = 0
+    RPM_L = 0
+    RPM_R = 0
+    Vl = 0.0
+    Vr = 0.0
     
     def __init__(self):
         print(self.ser.name)         # check which port was really used
@@ -38,8 +46,14 @@ class Robot:
         self.joyButtons = [0,0,0,0,0,0,0,0]
         if self.ser.isOpen():
             print("Serial Open")
-            msg = '$SREGI,0,ENCOD'
-            self.ser.write(msg+"\r"+"\n")
+            self.resetODO()
+            self.setREGI(0,'QENCOD')
+            self.setREGI(1,'QODO')
+            self.setREGI(2,'QRPM')
+            self.setSPERI(20)
+            self.setPEEN(1)
+            #msg = '$SREGI,0,ENCOD'
+            #self.ser.write(msg+"\r"+"\n")
             
         self.reset_odometry()   
         rospy.init_node('omoros', anonymous=True)
@@ -57,47 +71,12 @@ class Robot:
         rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
         #rospy.Subscriber("my_classifier", Num, callback2)
         rospy.Timer(rospy.Duration(0.1), self.joytimer)
-        rospy.Timer(rospy.Duration(0.1), self.reader)
+        rospy.Timer(rospy.Duration(0.01), self.reader)
         
         while not rospy.is_shutdown():
-            
-
             rate.sleep()
+            
         self.ser.close()
-    
-    def talker():
-        #pub_enc_l = rospy.Publisher('motor/encoder/left', Float64, queue_size=10)
-        #pub_enc_r = rospy.Publisher('motor/encoder/right', Float64, queue_size=10)
-        #pub = rospy.Publisher('motor/status', R1MotorStatusLR, queue_size=10)
-        rospy.init_node('omoros', anonymous=True)
-        rate = rospy.Rate(rospy.get_param('~hz', 30))
-        print("Talker Init")
-        print("connected to: " + ser.portstr)
-        count=1
-        while not rospy.is_shutdown():
-            for line in ser.read():
-                print(str(count) + str(': ') + chr(line) )
-            count = count+1
-            #data= ser.read(2) # I have "hi" coming from the arduino as a test run over the serial port
-            # publish motor status, including encoder value
-            #(flags, power, encoder, speed) = self.g.get_motor_status(self.ML)
-            #status_left = MotorStatus(low_voltage=(flags & (1<<0)), overloaded=(flags & (1<<1)),
-            #                          power=power, encoder=encoder, speed=speed)
-            #self.pub_enc_l.publish(Float64(data=encoder))
-
-            #(flags, power, encoder, speed) = self.g.get_motor_status(self.MR)
-            #status_right = MotorStatus(low_voltage=(flags & (1<<0)), overloaded=(flags & (1<<1)),
-            #                          power=power, encoder=encoder, speed=speed)
-            #self.pub_enc_r.publish(Float64(data=encoder))
-
-            #self.pub_motor_status.publish(MotorStatusLR(header=Header(stamp=rospy.Time.now()), left=status_left, right=status_right))
-            
-            # publish current pose
-            #(odom, transform)= self.odometry(status_left, status_right)
-            #self.pub_odometry.publish(odom)
-            #self.br.sendTransformMessage(transform)
-            rate.sleep()
-            
             
     def callbackJoy(self, data):
         self.joyAxes = deepcopy(data.axes)
@@ -115,23 +94,41 @@ class Robot:
 
     def reader(self, event):
         reader = self.ser_io.readline()
+        #print(reader)
         if reader:
             packet = reader.split(",")
-            header = packet[0].split("#")[1]
-            #print(reader)
-            if header.startswith('CVW'):
-                encoderL = int(packet[1])
-                encoderR = int(packet[2])
-                print('{:04d},{:04d}'.format(encoderL, encoderR))
-                # publish motor status, including encoder value
-                status_left = R1MotorStatus(low_voltage=0, overloaded=0,
-                                      power=0, encoder=encoderL, speed=encoderL)
-                status_right = R1MotorStatus(low_voltage=0, overloaded=0,
-                                      power=0, encoder=encoderR, speed=encoderR)
-                self.pub_enc_l.publish(Float64(data=encoderL))
-                self.pub_enc_r.publish(Float64(data=encoderR))
-                self.pub_motor_status.publish(R1MotorStatusLR(header=Header(stamp=rospy.Time.now()), left=status_left, right=status_right))
-        
+            try:
+                header = packet[0].split("#")[1]
+                if header.startswith('CVW'):
+                    self.Vl = int(packet[1])
+                    self.Vr = int(packet[2])
+                    #print('{:04d},{:04d}'.format(encoderL, encoderR))
+                    # publish motor status, including encoder value        
+                    #print('{:04d},{:04d}'.format(self.Vl, self.Vr))
+                elif header.startswith('QENCOD'):
+                    self.enc_L = int(packet[1])
+                    self.enc_R = int(packet[2])
+                    self.pub_enc_l.publish(Float64(data=self.enc_L))
+                    self.pub_enc_r.publish(Float64(data=self.enc_R))
+                    #print('{:04d},{:04d}'.format(self.enc_L, self.enc_R))
+                elif header.startswith('QODO'):
+                    self.odo_L = int(packet[1])
+                    self.odo_R = int(packet[2])
+                elif header.startswith('QRPM'):
+                    self.RPM_L = int(packet[1])
+                    self.RPM_R = int(packet[2])
+                    print('{:04d},{:04d}'.format(self.RPM_L, self.RPM_R))
+            except:
+                print('Wrong packet')
+                pass
+                
+            status_left = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
+                                        encoder = self.enc_L, RPM = self.RPM_L, ODO = self.odo_L)
+            status_right = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
+                                        encoder = self.enc_R, RPM = self.RPM_R, ODO = self.odo_R)
+            self.pub_motor_status.publish(R1MotorStatusLR(header=Header(stamp=rospy.Time.now()), left=status_left, right=status_right))        
+            
+                
     def joytimer(self, event):
         #global joyAxes
         #global joyButtons
@@ -174,7 +171,25 @@ class Robot:
         self.last_encoders = {'l': 0, 'r': 0}
         self.pose = PoseWithCovariance()
         self.pose.pose.orientation.w = 1
-
+        
+    def setREGI(self, param1, param2):
+        msg = "$SREGI,"+str(param1)+','+param2
+        self.ser.write(msg+"\r"+"\n")
+        print(msg)
+        
+    def setSPERI(self, param):
+        msg = "$SPERI,"+str(param)
+        self.ser.write(msg+"\r"+"\n")
+        print(msg)
+    
+    def setPEEN(self, param):
+        msg = "$SPEEN,"+str(param)
+        self.ser.write(msg+"\r"+"\n")
+        print(msg)
+        
+    def resetODO(self):
+        self.ser.write("$SODO\r\n")
+        
 if __name__ == '__main__':
     try:
         Robot()
