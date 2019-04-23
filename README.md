@@ -37,7 +37,7 @@ $ rostopic list
 /tf
 ```
 
-** Subscribed message
+**Subscribed message**
 
 * joy 
   - Axis: Joystick의 스틱 입력을 받아 좌/우 바퀴의 회전 속도를 제어합니다.
@@ -48,7 +48,7 @@ $ rostopic list
   - Vl, Vr : 로봇의 속도와 회전속도를 설정합니다. 단위는 각각 mm/s, mrad/s 입니다.
   - WheelL, WheelR: 바퀴의 속도를 설정합니다. 단위는 mm/s 입니다.
 
-** Publish message
+**Publish message**
 
 * motor/encoder/left or right: 모터 엔코더의 누적된 카운트를 출력합니다.
 
