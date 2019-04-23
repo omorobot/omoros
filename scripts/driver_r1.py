@@ -5,6 +5,7 @@ import rospy
 import serial
 import io
 import numpy as np
+import tf2
 from std_msgs.msg import UInt8, Int8, Int16, Float64, Float32
 from std_msgs.msg import Header
 
@@ -14,8 +15,8 @@ from geometry_msgs.msg import TransformStamped
 
 from nav_msgs.msg import Odometry
 from omoros.msg import R1MotorStatusLR, R1MotorStatus
-#from tf.transformations import quaternion_about_axis
-#from tf.broadcaster import TransformBroadcaster
+from tf2.transformations import quaternion_about_axis
+from tf2.broadcaster import TransformBroadcaster
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
 
@@ -24,7 +25,7 @@ class Robot:
     ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                               newline = '\r',
                               line_buffering = True)
-    rpm_max = 500
+    Vl_max_mm_s = 500 #Maximum speed mm/s
     joyAxes = []
     joyButtons = []
     joyDeadband = 0.15
@@ -70,7 +71,7 @@ class Robot:
         
         rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
         rospy.Timer(rospy.Duration(0.1), self.joytimer)
-        rospy.Timer(rospy.Duration(0.01), self.reader)
+        rospy.Timer(rospy.Duration(0.01), self.serReader)
         
         while not rospy.is_shutdown():
             rate.sleep()
@@ -91,7 +92,7 @@ class Robot:
         # Update button state
         self.joyButtons = deepcopy(newJoyButtons)
 
-    def reader(self, event):
+    def serReader(self, event):
         reader = self.ser_io.readline()
         if reader:
             packet = reader.split(",")
@@ -134,7 +135,7 @@ class Robot:
             self.joy_v = self.cmd.linear
             self.joy_w = self.cmd.rotation
             #print "Auto mode: {:.2f} {:.2f}".format(joy_v, joy_w)
-        # Apply joystick deadband and calculate left and right wheel speed %
+        # Apply joystick deadband and calculate vehicle speed (mm/s) and rate of chage of orientation(rad/s)
         if abs(self.joy_v) < self.joyDeadband:
             self.joy_v = 0.0
         else :
@@ -144,16 +145,23 @@ class Robot:
         else :
             self.joy_w = (1-self.exp) * self.joy_w + (self.exp) * self.joy_w * self.joy_w * self.joy_w
 
-        # Apply max wheel RPM to the left and right wheel
-        Vl = self.joy_v * self.rpm_max
-        Vr = self.joy_w * self.rpm_max
+        # Apply max Vehicle speed
+        Vl = self.joy_v * self.Vl_max_mm_s
+        Vr = self.joy_w * self.Vl_max_mm_s
+        self.sendCVWcontrol(Vl, Vr)
         
+    
+    def sendCVWcontrol(self, Vmm_s, Vrad_s):
+        if Vmm_s > self.Vl_max_mm_s :
+            Vmm_s = self.Vl_max_mm_s
+        elif Vmm_s < self.Vl_max_mm_s :
+            Vmm_s = -self.Vl_max_mm_s
         # Make a serial message to be sent to motor driver unit
-        str = '$CVW,{:.0f},{:.0f}'.format(Vl,Vr)
+        cmd = '$CVW,{:.0f},{:.0f}'.format(Vmm_s, Vrad_s)
         #print "$CVW: {:.0f} {:.0f} ".format(Vl, Vr)
         if self.ser.isOpen():
-            self.ser.write(str+"\r"+"\n")
-            
+            self.ser.write(cmd+"\r"+"\n")
+    
     def reset_odometry(self):
         self.last_encoders = {'l': 0, 'r': 0}
         self.pose = PoseWithCovariance()

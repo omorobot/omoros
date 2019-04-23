@@ -9,6 +9,7 @@ project(omoros)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   joy
+  geometry_msgs
   roscpp
   rospy
   sensor_msgs
