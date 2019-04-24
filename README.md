@@ -39,6 +39,7 @@ $ rosrun joy joy_node
 ```
 
 OMOROS 패키지를 실행합니다. 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
+
 시리얼 포트 관련 문제는 [다음](#serial)을 참조 바랍니다.
 
 ```
