@@ -9,6 +9,7 @@
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
 ## 1. 설치방법
+
 ROS패키지들이 설치되어있는 ros_catkin_ws/src 에서 git clone하여 소스를 복사하면 됩니다.
 
 ```
@@ -18,7 +19,31 @@ $ cd to catkin_ws
 $ catkin_make
 ```
 
+### 1.1 Dependency
+
+드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
+
+자세한 설치 방법은 아래 링크를 참조하세요.
+
+Joy: [ROS JOY](http://wiki.ros.org/joy)
+
+tf: [ROS TF](http://wiki.ros.org/tf)
+
 ## 2. How to use
+
+### 2.1 Launching Driver Node
+
+roscore가 실행중인 상태에서 joy 노드를 실행합니다.
+```
+$ rosrun joy joy_node
+```
+
+OMOROS 패키지를 실행합니다. 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
+시리얼 포트 관련 문제는 [다음](#serial)을 참조 바랍니다.
+
+```
+$ rosrun omoros driver_r1.py
+```
 
 
 ### 2.1 Messages
@@ -67,18 +92,8 @@ $ rostopic list
 
 ## 3. Trouble shooting
 
-### 3.1 Dependency
-
-드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
-
-자세한 설치 방법은 아래 링크를 참조하세요.
-
-Joy: [ROS JOY](http://wiki.ros.org/joy)
-
-tf: [ROS TF](http://wiki.ros.org/tf)
-
-
-### 3.2 퍼미션 오류: Add user dialout
+### 3.1 <a name="serial"> Serial Port Error </a>
+* 퍼미션 오류: Add user dialout
 
 아래와 같은 메세지가 뜨면서 시리얼 포트를 열 수 없는 경우
 
@@ -91,7 +106,7 @@ $ sudo gpasswd -a UserName dialout
 
 로그아웃 후 재 로그인을 하면 정상적으로 실행됩니다.
 
-### 2.3 시리얼 포트를 열 수 없는 경우
+* 시리얼 포트를 열 수 없는 경우
 
 시리얼 포트의 경로를 확인합니다.
 
