@@ -28,8 +28,8 @@ class Robot:
     ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                               newline = '\r',
                               line_buffering = True)
-    WIDTH = 170.0       #Vehicle width in mm
-    WHEEL_R = 33.6      #Wheel radius
+    WIDTH = 590.0       #Default Vehicle width in mm
+    WHEEL_R = 105.0     #Wheel radius
     WHEEL_MAXV = 1200.0 #Maximum wheel speed in mm/s
     JOY_MAXVL = 500     #Maximum speed in mm/s
     JOY_MAXVW = 314     #Maximum rotational speed in mrad/s
@@ -59,7 +59,21 @@ class Robot:
     vel = 0.0           #Velocity returned from CVW command
     rot = 0.0           #Rotational speed returned from CVR command
     
-    def __init__(self):
+    def __init__(self, arg):
+        if arg == "r1":
+            print "**********"
+            print "Driving R1"
+            print "**********"
+        if arg == "mini":
+            print "***************"
+            print "Driving R1-mini"
+            print "***************"
+            self.WIDTH = 170.0      #Apply vehicle width for mini version
+            self.WHEEL_R = 33.6     #Apply wheel radius for mini version
+        else :
+            print "Only support r1 and r1mini. exit..."
+            exit()
+        
         print(self.ser.name)         # check which port was really used
         self.joyAxes = [0,0,0,0,0,0,0,0]
         self.joyButtons = [0,0,0,0,0,0,0,0]
@@ -79,7 +93,7 @@ class Robot:
         self.br = TransformBroadcaster()
         # Subscriber
         rospy.Subscriber("joy", Joy, self.callbackJoy)
-	rospy.Subscriber("R1Command", R1Command, self.callbackCommand)
+        rospy.Subscriber("R1Command", R1Command, self.callbackCommand)
         # publisher
         self.pub_enc_l = rospy.Publisher('motor/encoder/left', Float64, queue_size=10)
         self.pub_enc_r = rospy.Publisher('motor/encoder/right', Float64, queue_size=10)
@@ -128,7 +142,7 @@ class Robot:
                     self.speedL = int(packet[1])
                     self.speedR = int(packet[2])
                     # publish current pose
-                    (odom, transform)= self.odometry(self.speedL, self.speedR)
+                    (odom, transform)= self.odometry(self.speedL/1000.0, self.speedR/1000.0)
                     self.pub_odometry.publish(odom)
                     self.br.sendTransformMessage(transform)
                     #print('{:04d},{:04d}'.format(self.wheelL_mm_s, self.wheelR_mm_s))
@@ -318,8 +332,11 @@ class Robot:
         self.ser.write("$SODO\r\n")
         
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print "Must enter either r1mini or r1"
+        exit()
     try:
-        Robot()
+        Robot(sys.argv[1])
     except rospy.ROSInterruptException:
         pass
     

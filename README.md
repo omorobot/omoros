@@ -38,14 +38,21 @@ roscore가 실행중인 상태에서 joy 노드를 실행합니다.
 $ rosrun joy joy_node
 ```
 
-OMOROS 패키지를 실행합니다. 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
+R1 및 R1-mini 버전에 따라 아래와 같이 입력하여 OMOROS 드라이버를 실행합니다. 
+
+**주의** 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
 
 시리얼 포트 관련 문제는 [다음](#serial)을 참조 바랍니다.
 
+R1 로봇은 아래 명령으로 실행합니다.
 ```
-$ rosrun omoros driver_r1.py
+$ rosrun omoros driver_r1.py r1
 ```
 
+R1-mini 버전은 다음 명령어로 실행합니다.
+```
+$ rosrun omoros driver_r1.py mini
+```
 
 ### 2.1 Messages
 이 드라이버는 다음과 같은 메세지들을 Publish 혹은 Subscribe 합니다.
