@@ -10,6 +10,8 @@
 
 ## 1. 설치방법
 
+### 1.1 ROS-Kinetic on Ubuntu 16.04 PC
+
 ROS패키지들이 설치되어있는 ros_catkin_ws/src 에서 git clone하여 소스를 복사하면 됩니다.
 
 ```
@@ -18,6 +20,24 @@ $ git clone https://github.com/omorobot/omoros.git
 $ cd to catkin_ws
 $ catkin_make
 ```
+### 1.2 ROS-Kinetic on Raspbian 
+
+로봇을 라즈베리파이에 연결하여 구동하는 경우 아래 설치 과정을 따라 설치 후 진행하시기 바랍니다.
+tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 것을 권장합니다.
+
+[Installing ROS Kinetic on the Raspberry Pi](http://wiki.ros.org/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi)
+
+** 이미지 파일로부터 Raspberry Pi 3 적용**
+
+위 설치과정이 번거롭다면 Raspberry Pi 3를 위해 만들어진 전체 이미지를 다운로드 하고 etcher와 같은 이미지 쓰기 도구로 microSD에 구워서 사용하여 설치합니다.
+
+[Raspian stretch image with ROS-kinetic installed](https://drive.google.com/open?id=1jAGlkIUAB_SLq0WCe1G4SktzwUm7abHW)
+
+처음 microSD로 부팅한 후에는 터미널에서 raspi-config 를 실행하여 파일시스템을 SD카드 전체로 확장합니다.
+
+<div align="center">
+<img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
+</div>
 
 ### 1.1 Dependency
 
