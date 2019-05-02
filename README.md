@@ -45,6 +45,12 @@ tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 
 
 자세한 설치 방법은 아래 링크를 참조하세요.
 
+* joy node 를 설치하기 위해 다음과 같은 패키지들이 필요합니다.
+
+```
+$ sudo apt install libusb-dev libbluetooth-dev libcwiid-dev libspnav-dev
+```
+
 Joy: [ROS JOY](http://wiki.ros.org/joy)
 
 tf: [ROS TF](http://wiki.ros.org/tf)
