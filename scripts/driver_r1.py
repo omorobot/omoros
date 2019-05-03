@@ -23,8 +23,8 @@ from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
 
 class Robot:
-    ser = serial.Serial('/dev/ttyUSB0', 115200)
-    #ser = serial.Serial('/dev/ttyS0', 115200) For raspberryPi
+    #ser = serial.Serial('/dev/ttyUSB0', 115200)
+    ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
     ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                               newline = '\r',
                               line_buffering = True)
@@ -54,11 +54,8 @@ class Robot:
     RPM_R = 0           #Right Wheel RPM returned from QRPM message
     speedL = 0.0        #Left Wheel speed returned from QDIFF message
     speedR = 0.0        #Reft Wheel speed returned from QDIFF message
-    last_speedR = 0.0
-    last_speedL = 0.0
     vel = 0.0           #Velocity returned from CVW command
     rot = 0.0           #Rotational speed returned from CVR command
-    
     def __init__(self, arg):
         if arg == "r1":
             print "**********"
@@ -134,6 +131,10 @@ class Robot:
                 elif header.startswith('QODO'):
                     self.odo_L = int(packet[1])
                     self.odo_R = int(packet[2])
+                    # publish current pose
+                    (odom, transform)= self.odometry(self.odo_L/1000.0, self.odo_R/1000.0)
+                    self.pub_odometry.publish(odom)
+                    self.br.sendTransformMessage(transform)
                 elif header.startswith('QRPM'):
                     self.RPM_L = int(packet[1])
                     self.RPM_R = int(packet[2])
@@ -142,9 +143,9 @@ class Robot:
                     self.speedL = int(packet[1])
                     self.speedR = int(packet[2])
                     # publish current pose
-                    (odom, transform)= self.odometry(self.speedL/1000.0, self.speedR/1000.0)
-                    self.pub_odometry.publish(odom)
-                    self.br.sendTransformMessage(transform)
+                    #(odom, transform)= self.odometry(self.speedL/1000.0, self.speedR/1000.0)
+                    #self.pub_odometry.publish(odom)
+                    #self.br.sendTransformMessage(transform)
                     #print('{:04d},{:04d}'.format(self.wheelL_mm_s, self.wheelR_mm_s))
             except:
                 print('Wrong packet')
@@ -192,8 +193,9 @@ class Robot:
         self.last_speedR = 0.0
         self.pose = PoseWithCovariance()
         self.pose.pose.orientation.w = 1
-
+        
     def odometry(self, left, right):
+        currentTime = rospy.Time.now();
         lSpeed = left
         rSpeed = right
         # Compute current linear and angular speed from wheel speed
@@ -201,12 +203,11 @@ class Robot:
         twist.twist.linear.x = (rSpeed + lSpeed) / 2.0
         twist.twist.angular.z = (rSpeed - lSpeed) / self.WIDTH
         # Compute position and orientation from travelled distance per wheel
-        dl = (lSpeed - self.last_speedL) / 1000.0
-        dr = (rSpeed - self.last_speedR) / 1000.0
+        dl = (lSpeed - self.last_speedL)
+        dr = (rSpeed - self.last_speedR)
         # set previous encoder state
         self.last_speedL = lSpeed
         self.last_speedR = rSpeed
-
         angle = (dr-dl) / self.WIDTH
         linear = 0.5*(dl+dr)
         if dr!=dl:
