@@ -68,7 +68,7 @@ class Robot:
             self.WIDTH = 170.0      #Apply vehicle width for mini version
             self.WHEEL_R = 33.6     #Apply wheel radius for mini version
         else :
-            print "Only support r1 and r1mini. exit..."
+            print "Only support r1 and mini. exit..."
             exit()
         
         print(self.ser.name)         # check which port was really used
@@ -334,7 +334,7 @@ class Robot:
         
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print "Must enter either r1mini or r1"
+        print "Must enter either mini or r1"
         exit()
     try:
         Robot(sys.argv[1])
