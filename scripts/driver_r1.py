@@ -71,6 +71,9 @@ class Robot:
    cmd = Command
    enc_L = 0.0          # Left wheel encoder count from QENCOD message
    enc_R = 0.0          # Right wheel encoder count from QENCOD message
+   enc_offset_L = 0.0
+   enc_offset_R = 0.0
+   enc_cnt = 0
    odo_L = 0.0          # Left Wheel odometry returned from QODO message
    odo_R = 0.0          # Right Wheel odometry returned from QODO message
    RPM_L = 0.0          # Left Wheel RPM returned from QRPM message
@@ -150,8 +153,14 @@ class Robot:
                self.rot = int(packet[2])
 
             elif header.startswith('QENCOD'):
-               self.enc_L = int(packet[1])
-               self.enc_R = int(packet[2])
+               enc_L = int(packet[1])
+               enc_R = int(packet[2])
+               if self.enc_cnt == 0:
+                  self.enc_offset_L = self.enc_L
+                  self.enc_offset_R = self.enc_R
+               self.enc_cnt+=1
+               self.enc_L = enc_L - self.enc_offset_L
+               self.enc_R = enc_R - self.enc_offset_R
                self.pub_enc_l.publish(Float64(data=self.enc_L))
                self.pub_enc_r.publish(Float64(data=self.enc_R))
                #print('{:04d},{:04d}'.format(self.enc_L, self.enc_R))
