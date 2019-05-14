@@ -1,6 +1,35 @@
 #!/usr/bin/env python
-import sys
 
+"""driver_r1.py: ROS driver for Omorobot R1 and R1-mini"""
+# For more information, please visit our website www.omorobot.com
+# Want to discuss with developers using our robots? Please visit our forum website at http://omorobot1.synology.me
+# Also note that this software is for experimental and subject to change
+# without any notifications.
+__license__ = "MIT"
+__version__ = "0.1.3"
+__status__ = "Experimental"
+'''
+## License
+The MIT License (MIT)
+R1 and R1 mini driver for ROS: an open source platform for driving a robot with ROS.
+Copyright (C) 2019  OMOROBOT Inc
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+'''
+import sys
 import rospy
 import serial
 import io
@@ -10,15 +39,8 @@ import math
 from std_msgs.msg import UInt8, Int8, Int16, Float64, Float32
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
-from geometry_msgs.msg import Twist
-from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance
-from geometry_msgs.msg import TransformStamped
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import JointState
 from omoros.msg import R1MotorStatusLR, R1MotorStatus
 from omoros.msg import R1Command
-from tf.transformations import quaternion_about_axis
-from tf.broadcaster import TransformBroadcaster
 
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
@@ -34,10 +56,6 @@ class ArrowCon:
    fullRotArcLen = 0
    FwdStep = 100.0      # Forward motion step when arrow key pressed (mm)
    RotRate = 1/10.0     # Rotational rate per full turn
-#   errori_L = 0.0
-#   errori_R = 0.0
-#   Kp = 1.2
-#   Ki = 0.13
    cnt = 0
 
 class Command:
@@ -117,16 +135,13 @@ class Robot:
       self.reset_odometry()   
       rospy.init_node('omoros', anonymous=True)
 
-      self.br = TransformBroadcaster()
       # Subscriber
       rospy.Subscriber("joy", Joy, self.callbackJoy)
       rospy.Subscriber("R1Command", R1Command, self.callbackCommand)
       # publisher
       self.pub_enc_l = rospy.Publisher('motor/encoder/left', Float64, queue_size=10)
       self.pub_enc_r = rospy.Publisher('motor/encoder/right', Float64, queue_size=10)
-      self.pub_odometry = rospy.Publisher("odom", Odometry, queue_size=10)
       self.pub_motor_status = rospy.Publisher('motor/status', R1MotorStatusLR, queue_size=10)
-      self.pub_joints = rospy.Publisher("joint_state", JointState, queue_size=10)
 
       rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
       rospy.Timer(rospy.Duration(0.05), self.joytimer)
@@ -151,7 +166,6 @@ class Robot:
             if header.startswith('CVW'):
                self.vel = int(packet[1])
                self.rot = int(packet[2])
-
             elif header.startswith('QENCOD'):
                enc_L = int(packet[1])
                enc_R = int(packet[2])
@@ -163,28 +177,16 @@ class Robot:
                self.enc_R = enc_R - self.enc_offset_R
                self.pub_enc_l.publish(Float64(data=self.enc_L))
                self.pub_enc_r.publish(Float64(data=self.enc_R))
-               #print('{:04d},{:04d}'.format(self.enc_L, self.enc_R))
             elif header.startswith('QODO'):
                self.odo_L = -float(packet[1])
                self.odo_R = -float(packet[2])
-               # publish current pose
-               (odom, transform)= self.odometry(self.odo_L/1000.0, self.odo_R/1000.0)
-               self.pub_odometry.publish(odom)
-               self.br.sendTransformMessage(transform)
             elif header.startswith('QRPM'):
                self.RPM_L = int(packet[1])
                self.RPM_R = int(packet[2])
-               #print('{:04d},{:04d}'.format(self.RPM_L, self.RPM_R))
             elif header.startswith('QDIFFV'):
                self.speedL = int(packet[1])
                self.speedR = int(packet[2])
-               # publish current pose
-               #(odom, transform)= self.odometry(self.speedL/1000.0, self.speedR/1000.0)
-               #self.pub_odometry.publish(odom)
-               #self.br.sendTransformMessage(transform)
-               #print('{:04d},{:04d}'.format(self.wheelL_mm_s, self.wheelR_mm_s))
          except:
-            print('Wrong packet')
             pass
              
          status_left = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
@@ -250,7 +252,6 @@ class Robot:
                   self.arrowCon.targetOdo_L = self.odo_L + self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
                   self.arrowCon.targetOdo_R = self.odo_R - self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
                   print "Arrow Right"
-               print "Arrow: {:.2f} {:.2f} ".format(self.arrowCon.startOdo_L, self.arrowCon.targetOdo_L)
       # Update button state
       self.joyButtons = deepcopy(newJoyButtons)
 
@@ -267,76 +268,11 @@ class Robot:
          self.cmd.speedL = lSpeed
          self.cmd.speedR = rSpeed
       if self.isAutoMode == True:
-         #print "AutoMode VL, VR: {:.2f} {:.2f}".format(speedL, speedR)
          self.sendCDIFFVcontrol(speedL, speedR)
 
    def reset_odometry(self):
       self.last_speedL = 0.0
       self.last_speedR = 0.0
-      self.pose = PoseWithCovariance()
-      self.pose.pose.orientation.w = 1
-        
-   def odometry(self, left, right):
-      currentTime = rospy.Time.now();
-      lSpeed = left
-      rSpeed = right
-      # Compute current linear and angular speed from wheel speed
-      twist = TwistWithCovariance()
-      twist.twist.linear.x = (rSpeed + lSpeed) / 2.0
-      twist.twist.angular.z = (rSpeed - lSpeed) / self.WIDTH
-      # Compute position and orientation from travelled distance per wheel
-      dl = (lSpeed - self.last_speedL)
-      dr = (rSpeed - self.last_speedR)
-      # set previous encoder state
-      self.last_speedL = lSpeed
-      self.last_speedR = rSpeed
-      angle = (dr-dl) / self.WIDTH
-      linear = 0.5*(dl+dr)
-      if dr!=dl:
-         radius = self.WIDTH/2.0 * (dl+dr) / (dr-dl)
-      else:
-         radius = 0
-
-      # old state
-      old_angle = 2*np.arccos(self.pose.pose.orientation.w)
-      old_pos = np.array([self.pose.pose.position.x, self.pose.pose.position.y])
-
-      # update state
-      new_angle = (old_angle+angle) % (2*np.pi)
-      new_q = quaternion_about_axis(new_angle, (0, 0, 1))
-      new_angle2 = 2 * np.arccos(self.pose.pose.orientation.w)
-      #print("new_angle2", new_angle2)
-      new_pos = np.zeros((2,))
-
-      if abs(angle) < 1e-6:
-         direction = old_angle + angle * 0.5
-         dx = linear * np.cos(direction)
-         dy = linear * np.sin(direction)
-      else:
-         dx = + radius * (np.sin(new_angle) - np.sin(old_angle))
-         dy = - radius * (np.cos(new_angle) - np.cos(old_angle))
-
-      new_pos[0] = old_pos[0] + dx
-      new_pos[1] = old_pos[1] + dy
-
-      self.pose.pose.orientation.x = new_q[0]
-      self.pose.pose.orientation.y = new_q[1]
-      self.pose.pose.orientation.z = new_q[2]
-      self.pose.pose.orientation.w = new_q[3]
-      self.pose.pose.position.x = new_pos[0]
-      self.pose.pose.position.y = new_pos[1]
-
-      odom = Odometry(header=Header(stamp=rospy.Time.now(), frame_id="odom"), child_frame_id="base_link",
-                     pose=self.pose, twist=twist)
-
-      transform = TransformStamped(header=Header(stamp=rospy.Time.now(), frame_id="world"),
-                     child_frame_id="omoros")
-      transform.transform.translation.x = self.pose.pose.position.x
-      transform.transform.translation.y = self.pose.pose.position.y
-      transform.transform.translation.z = self.pose.pose.position.z
-      transform.transform.rotation = self.pose.pose.orientation
-
-      return odom, transform
 
    def joytimer(self, event):
       if self.isAutoMode!= True:
@@ -363,25 +299,9 @@ class Robot:
          self.sendCDIFFVcontrol(speedL, speedR)
       else:
          if self.arrowCon.isFinished == False:
-#            error_L = self.arrowCon.targetOdo_L-self.odo_L
-#            error_R = self.arrowCon.targetOdo_R-self.odo_R
-#            self.arrowCon.errori_L += error_L
-#            self.arrowCon.errori_R += error_R
-#            print "Error:{:.2f} I:{:.2f} ".format(error_L, self.arrowCon.errori_L)
-#            if abs(self.arrowCon.errori_L) < 1.0 and abs(self.arrowCon.errori_R) < 1.0:
-#               self.arrowCon.errori_L = 0.0
-#               self.arrowCon.errori_L = 0.0
-#               self.arrowCon.isFinished = True
-#               self.sendCDIFFVcontrol(0, 0)
-#               print "Finished!"
-#            else:
-#               speedL = error_L*self.arrowCon.Kp+self.arrowCon.errori_L*self.arrowCon.Ki
-#               speedR = error_R*self.arrowCon.Kp+self.arrowCon.errori_R*self.arrowCon.Ki
-#               self.sendCDIFFVcontrol(speedL, speedR)
-            
             if self.arrowCon.setFwd == 1:  # For forward motion
                if (self.odo_L < self.arrowCon.targetOdo_L) or (self.odo_R < self.arrowCon.targetOdo_R ):
-                  print "Fwd: {:.2f} {:.2f} ".format(self.arrowCon.targetOdo_L, self.odo_L)
+                  print "Fwd: {:.2f} {:.2f} ".format(self.odo_L, self.odo_R)
                   self.sendCDIFFVcontrol(100, 100)
                else:
                   self.sendCDIFFVcontrol(0, 0)
@@ -390,7 +310,7 @@ class Robot:
                   print "Finished!"
             elif self.arrowCon.setFwd == -1:
                if (self.odo_L > self.arrowCon.targetOdo_L ) or (self.odo_R > self.arrowCon.targetOdo_R ):
-                  print "Rev: {:.2f} {:.2f} ".format(self.arrowCon.targetOdo_L, self.odo_L)
+                  print "Rev: {:.2f} {:.2f} ".format(self.odo_L, self.odo_R)
                   self.sendCDIFFVcontrol(-100, -100)
                else:
                   self.sendCDIFFVcontrol(0, 0)
@@ -399,6 +319,7 @@ class Robot:
                   print "Finished!"
             elif self.arrowCon.setRot == 1:
                if (self.odo_L > self.arrowCon.targetOdo_L) or (self.odo_R < self.arrowCon.targetOdo_R):
+                  print "Rev: {:.2f} {:.2f} ".format(self.odo_L, self.odo_R)
                   self.sendCDIFFVcontrol(-100, 100)
                else:
                   self.sendCDIFFVcontrol(0, 0)
@@ -407,6 +328,7 @@ class Robot:
                   print "Finished!"
             elif self.arrowCon.setRot == -1:
                if (self.odo_L < self.arrowCon.targetOdo_L) or (self.odo_R > self.arrowCon.targetOdo_R):
+                  print "Rev: {:.2f} {:.2f} ".format(self.odo_L, self.odo_R)
                   self.sendCDIFFVcontrol(100, -100)
                else:
                   self.sendCDIFFVcontrol(0, 0)
@@ -449,7 +371,6 @@ class Robot:
       if self.ser.isOpen():
          self.ser.write(cmd+"\r"+"\n")
                     
-
    def setREGI(self, param1, param2):
       msg = "$SREGI,"+str(param1)+','+param2
       self.ser.write(msg+"\r"+"\n")
