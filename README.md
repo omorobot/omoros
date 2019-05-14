@@ -86,14 +86,11 @@ $ rosrun omoros driver_r1.py mini
 $ rostopic list
 /R1Command
 /diagnostics
-/joint_state
 /joy
 /joy/set_feedback
 /motor/encoder/left
 /motor/encoder/right
 /motor/status
-/odom
-/tf
 ```
 
 **Subscribed message**
@@ -117,11 +114,7 @@ $ rostopic list
   <img src="images/topic_motor_status.png">
 </div>
 
-* odom: Navigation에 필요한 속도/회전속도 등을 전송합니다.
-<div align="center">
-  <img src="images/topic_odom.png">
-</div>
-
+* odom: Navigation에 필요한 속도/회전속도 등을 전송합니다. (향후 지원 예정)
 
 
 ## 3. Trouble shooting
@@ -144,10 +137,11 @@ $ sudo gpasswd -a UserName dialout
 
 시리얼 포트의 경로를 확인합니다.
 
-driver_r1.py를 열고 다음 코드를 수정합니다.
+scripts/driver_r1.py를 열고 다음 코드의 내용을 수정합니다.
 
 ```
-ser = serial.Serial('/dev/ttyUSB0', 115200)
+   #ser = serial.Serial('/dev/ttyUSB0', 115200)
+   ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
 ```
 
 Raspberry PI의 내장 시리얼포트를 사용하기 위해서는 경로를 아래와같이 설정합니다.
