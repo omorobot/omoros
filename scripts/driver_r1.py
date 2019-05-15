@@ -67,8 +67,8 @@ class Command:
    speedR = 0.0      # Right wheel speed mm/s
 
 class Robot:
-   #ser = serial.Serial('/dev/ttyUSB0', 115200)
-   ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
+   ser = serial.Serial('/dev/ttyUSB0', 115200)
+   #ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
    ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                            newline = '\r',
                            line_buffering = True)
@@ -105,7 +105,7 @@ class Robot:
          print "**********"
          print "Driving R1"
          print "**********"
-      if arg == "mini":
+      elif arg == "mini":
          print "***************"
          print "Driving R1-mini"
          print "***************"
@@ -177,9 +177,11 @@ class Robot:
                self.enc_R = enc_R - self.enc_offset_R
                self.pub_enc_l.publish(Float64(data=self.enc_L))
                self.pub_enc_r.publish(Float64(data=self.enc_R))
+               #print('Encoder:L{:.2f}, R:{:.2f}'.format(self.enc_L, self.enc_R))
             elif header.startswith('QODO'):
                self.odo_L = -float(packet[1])
                self.odo_R = -float(packet[2])
+               #print('Odo:{:.2f}mm,{:.2f}mm'.format(self.odo_L, self.odo_R))
             elif header.startswith('QRPM'):
                self.RPM_L = int(packet[1])
                self.RPM_R = int(packet[2])
@@ -188,7 +190,6 @@ class Robot:
                self.speedR = int(packet[2])
          except:
             pass
-             
          status_left = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
                            encoder = self.enc_L, RPM = self.RPM_L, ODO = self.odo_L, speed = self.speedL)
          status_right = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
