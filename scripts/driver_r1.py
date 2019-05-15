@@ -195,7 +195,8 @@ class Robot:
                            encoder = self.enc_L, RPM = self.RPM_L, ODO = self.odo_L, speed = self.speedL)
          status_right = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
                            encoder = self.enc_R, RPM = self.RPM_R, ODO = self.odo_R, speed = self.speedR)
-         self.pub_motor_status.publish(R1MotorStatusLR(header=Header(stamp=rospy.Time.now()), 
+         self.pub_motor_status.publish(R1MotorStatusLR(header=Header(stamp=rospy.Time.now()),
+                           Vspeed = self.vel, Vomega = self.rot,
                            left=status_left, right=status_right))        
 
             
