@@ -129,6 +129,7 @@ class Robot:
          self.setREGI(0,'QENCOD')
          self.setREGI(1,'QODO')
          self.setREGI(2,'QDIFFV')
+         self.setREGI(3,'QVW')
          self.setSPERI(20)
          self.setPEEN(1)
          
@@ -163,7 +164,7 @@ class Robot:
          packet = reader.split(",")
          try:
             header = packet[0].split("#")[1]
-            if header.startswith('CVW'):
+            if header.startswith('QVW'):
                self.vel = int(packet[1])
                self.rot = int(packet[2])
             elif header.startswith('QENCOD'):
