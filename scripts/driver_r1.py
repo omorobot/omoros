@@ -36,14 +36,27 @@ import io
 import numpy as np
 import math
 
+from time import sleep
 from std_msgs.msg import UInt8, Int8, Int16, Float64, Float32
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from omoros.msg import R1MotorStatusLR, R1MotorStatus
 from omoros.msg import R1Command
+#from math import sin, cos
 
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
+
+from geometry_msgs.msg import Twist, TwistWithCovariance, Pose, Point, Vector3, Quaternion
+from tf.broadcaster import TransformBroadcaster
+from nav_msgs.msg import Odometry
+from tf.transformations import quaternion_from_euler
+
+class MyPose(object):
+   x = 0
+   y = 0
+   theta = 0
+   timestamp = 0
 
 class ArrowCon:
    setFwd = 0           # 1:Fwd, -1: Rev
@@ -53,11 +66,26 @@ class ArrowCon:
    targetOdo_L = 0      # Odometry target
    targetOdo_R = 0
    isFinished = True    # True: If arrow motion is completed
-   fullRotArcLen = 0
-   FwdStep = 100.0      # Forward motion step when arrow key pressed (mm)
-   RotRate = 1/10.0     # Rotational rate per full turn
    cnt = 0
-
+   
+class Encoder(object):
+   Dir = 1.0
+   PPR = 0
+   GearRatio = 0
+   Step = 0
+   
+class VehicleConfig(object):
+   BodyCircumference = 0    # circumference length of robot for spin in place
+   WheelCircumference = 0
+   WIDTH = 0.0             # Default Vehicle width in mm
+   WHEEL_R = 0.0           # Wheel radius
+   WHEEL_MAXV = 0.0        #    
+   JOY_MAXVspeed = 0       # Maximum speed in mm/s
+   JOY_MAXVomega = 0       # Maximum rotational speed in mrad/s
+   ArrowFwdStep = 100.0    # Forward motion step when arrow key pressed (mm)
+   ArrowRotRate = 1/10.0   # Rotational rate per full turn
+   encoder = Encoder()
+   
 class Command:
    isAlive = False   # Set to True if subscrived command message has been received
    mode = 0          # Command mode (0:vel, rot) <--> (1:speedL, speedR)
@@ -72,11 +100,8 @@ class Robot:
    ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                            newline = '\r',
                            line_buffering = True)
-   WIDTH = 590.0       # Default Vehicle width in mm
-   WHEEL_R = 105.0     # Wheel radius
-   WHEEL_MAXV = 1200.0 # Maximum wheel speed in mm/s
-   JOY_MAXVL = 500     # Maximum speed in mm/s
-   JOY_MAXVW = 314     # Maximum rotational speed in mrad/s
+   config = VehicleConfig()
+   pose = MyPose()
    joyAxes = []
    joyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]    # Buttons 15
    joyDeadband = 0.15
@@ -89,6 +114,8 @@ class Robot:
    cmd = Command
    enc_L = 0.0          # Left wheel encoder count from QENCOD message
    enc_R = 0.0          # Right wheel encoder count from QENCOD message
+   enc_L_prev = 0.0
+   enc_R_prev = 0.0
    enc_offset_L = 0.0
    enc_offset_R = 0.0
    enc_cnt = 0
@@ -101,23 +128,47 @@ class Robot:
    vel = 0.0            # Velocity returned from CVW command
    rot = 0.0            # Rotational speed returned from CVR command
    def __init__(self, arg):
+      ## Set vehicle specific configurations
       if arg == "r1":
          print "**********"
          print "Driving R1"
          print "**********"
+         self.config.WIDTH = 591.0      # Apply vehicle width for R1 version
+         self.config.WHEEL_R = 110      # Apply wheel radius for R1 version
+         self.config.WHEEL_MAXV = 1000.0
+         self.config.JOY_MAXVspeed = 800.0
+         self.config.JOY_MAXVomega = 150
+         self.config.ArrowFwdStep = 250
+         self.config.ArrowRotRate = 1/8
+         self.config.encoder.Dir = 1.0
+         self.config.encoder.PPR = 1000
+         self.config.encoder.GearRatio = 15
+         
       elif arg == "mini":
          print "***************"
          print "Driving R1-mini"
          print "***************"
-         self.WIDTH = 170.0      # Apply vehicle width for mini version
-         self.WHEEL_R = 33.6     # Apply wheel radius for mini version
-         
+         self.config.WIDTH = 170.0      # Apply vehicle width for mini version
+         self.config.WHEEL_R = 33.6     # Apply wheel radius for mini version
+         self.config.WHEEL_MAXV = 500.0
+         self.config.JOY_MAXVspeed = 500.0
+         self.config.JOY_MAXVomega = 100
+         self.config.ArrowFwdStep = 100
+         self.config.ArrowRotRate = 1/10
+         self.config.encoder.Dir = -1.0
+         self.config.encoder.PPR = 234
+         self.config.encoder.GearRatio = 21         
       else :
          print "Only support r1 and mini. exit..."
          exit()
-      print('Wheel Width:{:.2f}mm, Radius:{:.2f}mm'.format(self.WIDTH, self.WHEEL_R))
-      self.arrowCon.fullRotArcLen = self.WIDTH * math.pi
-      print('Platform full rotation arc length: {:04f}mm'.format(self.arrowCon.fullRotArcLen))
+      print('Wheel Width:{:.2f}mm, Radius:{:.2f}mm'.format(self.config.WIDTH, self.config.WHEEL_R))
+      self.config.BodyCircumference = self.config.WIDTH * math.pi
+      print('Platform Rotation arc length: {:04f}mm'.format(self.config.BodyCircumference))
+      self.config.WheelCircumference = self.config.WHEEL_R * 2 * math.pi
+      print('Wheel circumference: {:04f}mm'.format(self.config.WheelCircumference))
+      self.config.encoder.Step = self.config.WheelCircumference / (self.config.encoder.PPR * self.config.encoder.GearRatio * 4)
+      print('Platform encoder step: {:04f}mm/pulse'.format(self.config.encoder.Step))
+      
       print(self.ser.name)         # Print which port was really used
       self.joyAxes = [0,0,0,0,0,0,0,0]
       self.joyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -125,17 +176,29 @@ class Robot:
       if self.ser.isOpen():
          print("Serial Open")
          self.resetODO()
+         sleep(0.05)
          self.reset_odometry()
          self.setREGI(0,'QENCOD')
+         sleep(0.05)
          self.setREGI(1,'QODO')
+         sleep(0.05)
          self.setREGI(2,'QDIFFV')
+         sleep(0.05)
          self.setREGI(3,'QVW')
+         sleep(0.05)
+         self.setREGI(4,'QRPM')
+         sleep(0.05)
          self.setSPERI(20)
+         sleep(0.05)
          self.setPEEN(1)
+         sleep(0.05)
          
       self.reset_odometry()   
       rospy.init_node('omoros', anonymous=True)
-
+      
+      self.odom_pub = rospy.Publisher("odom", Odometry, queue_size=10)
+      self.odom_broadcaster = TransformBroadcaster()
+      
       # Subscriber
       rospy.Subscriber("joy", Joy, self.callbackJoy)
       rospy.Subscriber("R1Command", R1Command, self.callbackCommand)
@@ -147,6 +210,7 @@ class Robot:
       rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
       rospy.Timer(rospy.Duration(0.05), self.joytimer)
       rospy.Timer(rospy.Duration(0.01), self.serReader)
+      self.pose.timestamp = rospy.Time.now()
 
       while not rospy.is_shutdown():
          if self.cmd.isAlive == True:
@@ -171,21 +235,23 @@ class Robot:
                enc_L = int(packet[1])
                enc_R = int(packet[2])
                if self.enc_cnt == 0:
-                  self.enc_offset_L = self.enc_L
-                  self.enc_offset_R = self.enc_R
+                  self.enc_offset_L = enc_L
+                  self.enc_offset_R = enc_R
                self.enc_cnt+=1
-               self.enc_L = enc_L - self.enc_offset_L
-               self.enc_R = enc_R - self.enc_offset_R
+               self.enc_L = enc_L*self.config.encoder.Dir - self.enc_offset_L
+               self.enc_R = enc_R*self.config.encoder.Dir - self.enc_offset_R
                self.pub_enc_l.publish(Float64(data=self.enc_L))
                self.pub_enc_r.publish(Float64(data=self.enc_R))
+               self.pose = self.updatePose(self.pose, self.enc_L, self.enc_R)
                #print('Encoder:L{:.2f}, R:{:.2f}'.format(self.enc_L, self.enc_R))
             elif header.startswith('QODO'):
-               self.odo_L = -float(packet[1])
-               self.odo_R = -float(packet[2])
+               self.odo_L = float(packet[1])*self.config.encoder.Dir
+               self.odo_R = float(packet[2])*self.config.encoder.Dir
                #print('Odo:{:.2f}mm,{:.2f}mm'.format(self.odo_L, self.odo_R))
             elif header.startswith('QRPM'):
                self.RPM_L = int(packet[1])
                self.RPM_R = int(packet[2])
+               #print('RPM:{:.2f}mm,{:.2f}mm'.format(self.RPM_L, self.RPM_R))
             elif header.startswith('QDIFFV'):
                self.speedL = int(packet[1])
                self.speedR = int(packet[2])
@@ -222,38 +288,42 @@ class Robot:
              print "Joystick Axis Mode"
       
       if self.isArrowMode == True:
-         if (newJoyButtons[13]==1) or (newJoyButtons[14]==1):
+         #if (newJoyButtons[13]==1) or (newJoyButtons[14]==1):
+         if (self.joyAxes[7]==1.0) or (self.joyAxes[7]==-1.0):
             if self.arrowCon.isFinished ==True:
                self.arrowCon.isFinished = False
                self.arrowCon.startOdo_L = self.odo_L
                self.arrowCon.startOdo_R = self.odo_R
-               if newJoyButtons[13]==1:   # FWD arrow
+               #if newJoyButtons[13]==1:   # FWD arrow
+               if self.joyAxes[7]==1.0:
                   self.arrowCon.setFwd = 1
-                  self.arrowCon.targetOdo_L = self.odo_L + self.arrowCon.FwdStep #target 1 step ahead
-                  self.arrowCon.targetOdo_R = self.odo_R + self.arrowCon.FwdStep #target 1 step ahead
+                  self.arrowCon.targetOdo_L = self.odo_L + self.config.ArrowFwdStep #target 1 step ahead
+                  self.arrowCon.targetOdo_R = self.odo_R + self.config.ArrowFwdStep #target 1 step ahead
                   print "Arrow Fwd"
                else:                      # REV arrow
                   self.arrowCon.setFwd = -1 
-                  self.arrowCon.targetOdo_L = self.odo_L - self.arrowCon.FwdStep #target 1 step rear
-                  self.arrowCon.targetOdo_R = self.odo_R - self.arrowCon.FwdStep #target 1 step rear
+                  self.arrowCon.targetOdo_L = self.odo_L - self.config.ArrowFwdStep #target 1 step rear
+                  self.arrowCon.targetOdo_R = self.odo_R - self.config.ArrowFwdStep #target 1 step rear
                   print "Arrow Rev"
                print "Arrow: {:.2f} {:.2f} ".format(self.arrowCon.startOdo_L, self.arrowCon.targetOdo_L)
          
-         elif (newJoyButtons[11]==1) or (newJoyButtons[12]==1):
+         #elif (newJoyButtons[11]==1) or (newJoyButtons[12]==1):
+         elif (self.joyAxes[6]==1.0) or (self.joyAxes[6]==-1.0):
             if self.arrowCon.isFinished ==True:
                turnRate = 10.5
                self.arrowCon.isFinished = False
                self.arrowCon.startOdo_L = self.odo_L
                self.arrowCon.startOdo_R = self.odo_R
-               if newJoyButtons[11]==1:   # Left arrow
+               #if newJoyButtons[11]==1:   # Left arrow
+               if self.joyAxes[6]==1.0:
                   self.arrowCon.setRot = 1
-                  self.arrowCon.targetOdo_L = self.odo_L - self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
-                  self.arrowCon.targetOdo_R = self.odo_R + self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
+                  self.arrowCon.targetOdo_L = self.odo_L + self.config.BodyCircumference*self.config.ArrowRotRate*self.config.encoder.Dir
+                  self.arrowCon.targetOdo_R = self.odo_R - self.config.BodyCircumference*self.config.ArrowRotRate*self.config.encoder.Dir
                   print "Arrow Left"
                else:                     # Right arrow
                   self.arrowCon.setRot = -1
-                  self.arrowCon.targetOdo_L = self.odo_L + self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
-                  self.arrowCon.targetOdo_R = self.odo_R - self.arrowCon.fullRotArcLen*self.arrowCon.RotRate
+                  self.arrowCon.targetOdo_L = self.odo_L - self.config.BodyCircumference*self.config.ArrowRotRate*self.config.encoder.Dir
+                  self.arrowCon.targetOdo_R = self.odo_R + self.config.BodyCircumference*self.config.ArrowRotRate*self.config.encoder.Dir
                   print "Arrow Right"
       # Update button state
       self.joyButtons = deepcopy(newJoyButtons)
@@ -297,7 +367,7 @@ class Robot:
          else :
              joyR = (1-self.exp) * self.joy_w + (self.exp) * self.joy_w * self.joy_w * self.joy_w
          # Apply max Vehicle speed
-         (speedL, speedR) = self.getWheelSpeed(joyV * self.JOY_MAXVL, joyR * self.JOY_MAXVW)
+         (speedL, speedR) = self.getWheelSpeed(self.config, joyV * self.config.JOY_MAXVspeed, joyR * self.config.JOY_MAXVomega)
          #print "Joystick VL, VR: {:.2f} {:.2f}".format(speedL, speedR)
          self.sendCDIFFVcontrol(speedL, speedR)
       else:
@@ -338,20 +408,71 @@ class Robot:
                   self.arrowCon.isFinished = True
                   self.arrowCon.setRot = 0
                   print "Finished!"
+                  
+   def updatePose(self, pose, encoderL, encoderR):
+      now = rospy.Time.now()
+      dL = encoderL - self.enc_L_prev
+      dR = encoderR - self.enc_R_prev
+      self.enc_L_prev = encoderL
+      self.enc_R_prev = encoderR
+      dT = (now - pose.timestamp)/1000000.0
+      pose.timestamp = now
+      #print "dT: {:.2f} {:.2f} ".format(dT, deltaL)
+      x = pose.x
+      y = pose.y
+      theta = pose.theta
+      R = 0.0
+      if (dR-dL)==0:
+         R = 0.0
+      else:
+         R = self.config.WIDTH*(dL+dR)/(dR-dL)
+      Wdt = (dR - dL) * self.config.encoder.Step / self.config.WIDTH
 
-   def getWheelSpeed(self, V, W):
+      ICCx = x - R * np.sin(theta)
+      ICCy = y + R * np.cos(theta)
+      print dT
+      pose.x = np.cos(Wdt)*(x - ICCx) - np.sin(Wdt)*(y - ICCy) + ICCx
+      pose.y = np.sin(Wdt)*(x - ICCx) + np.cos(Wdt)*(y - ICCy) + ICCy
+      pose.theta = theta + Wdt
+      
+      twist = TwistWithCovariance()
+      
+      twist.twist.linear.x = self.vel/1000.0#(pose.x - x)/dT
+      twist.twist.linear.y = 0.0#(pose.y - y)/dT
+
+      twist.twist.angular.z = self.rot/1000.0#(pose.theta - theta)/dT
+      
+      Vx = twist.twist.linear.x
+      Vy = twist.twist.linear.y
+      Vth = twist.twist.angular.z
+      odom_quat = quaternion_from_euler(0,0,pose.theta)
+      self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_link','odom')
+      
+      odom = Odometry()
+      odom.header.stamp = now
+      odom.header.frame_id = 'odom'
+      
+      odom.pose.pose = Pose(Point(pose.x,pose.y,0.),Quaternion(*odom_quat))
+      
+      odom.child_frame_id = 'base_link'
+      odom.twist.twist = Twist(Vector3(Vx,Vy,0),Vector3(0,0,Vth))
+      print "x,y: {:.2f} {:.2f} {:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
+      self.odom_pub.publish(odom)
+      return pose
+
+   def getWheelSpeed(self, config, V, W):
       #Calculate left and right wheel speed from Velocity, Rotation speed        
       #Kinematics reference from http://enesbot.me/kinematic-model-of-a-differential-drive-robot.html
-      speedL = 2.0*V - (self.WIDTH * W / self.WHEEL_R + 2.0 * V)/2.0
-      speedR = (self.WIDTH * W / self.WHEEL_R + 2.0*V) / 2.0
+      speedL = V - config.WIDTH * W / config.WHEEL_R /2.0
+      speedR = V + config.WIDTH * W / config.WHEEL_R /2.0
       return speedL, speedR
 
-   def sendCVWcontrol(self, Vmm_s, Vrad_s):
+   def sendCVWcontrol(self, config, Vmm_s, Vrad_s):
       #Set Vehicle velocity and rotational speed
-      if Vmm_s > self.JOY_MAXVL :
-         Vmm_s = self.JOY_MAXVL
-      elif Vmm_s < -self.JOY_MAXVL :
-         Vmm_s = -self.JOY_MAXVL
+      if Vmm_s > config.JOY_MAXVspeed :
+         Vmm_s = config.JOY_MAXVspeed
+      elif Vmm_s < -config.JOY_MAXVspeed :
+         Vmm_s = -config.JOY_MAXVspeed
       # Make a serial message to be sent to motor driver unit
       cmd = '$CVW,{:.0f},{:.0f}'.format(Vmm_s, Vrad_s)
       #print "$CVW: {:.0f} {:.0f} ".format(Vmm_s, Vrad_s)
@@ -360,14 +481,14 @@ class Robot:
 
    def sendCDIFFVcontrol(self, VLmm_s, VRmm_s):
       #Set differential wheel speed for Left and Right
-      if VLmm_s > self.WHEEL_MAXV :
-         VLmm_s = self.WHEEL_MAXV
-      elif VLmm_s < -self.WHEEL_MAXV :
-         VLmm_s = -self.WHEEL_MAXV
-      if VRmm_s > self.WHEEL_MAXV :
-         VRmm_s = self.WHEEL_MAXV
-      elif VRmm_s < -self.WHEEL_MAXV :
-         VRmm_s = -self.WHEEL_MAXV
+      if VLmm_s > self.config.WHEEL_MAXV :
+         VLmm_s = self.config.WHEEL_MAXV
+      elif VLmm_s < -self.config.WHEEL_MAXV :
+         VLmm_s = -self.config.WHEEL_MAXV
+      if VRmm_s > self.config.WHEEL_MAXV :
+         VRmm_s = self.config.WHEEL_MAXV
+      elif VRmm_s < -self.config.WHEEL_MAXV :
+         VRmm_s = -self.config.WHEEL_MAXV
       # Make a serial message to be sent to motor driver unit
       cmd = '$CDIFFV,{:.0f},{:.0f}'.format(VLmm_s, VRmm_s)
       #print "$CVW: {:.0f} {:.0f} ".format(Vmm_s, Vrad_s)
