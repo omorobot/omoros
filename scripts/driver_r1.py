@@ -42,7 +42,6 @@ from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from omoros.msg import R1MotorStatusLR, R1MotorStatus
 from omoros.msg import R1Command
-#from math import sin, cos
 
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
@@ -75,7 +74,7 @@ class Encoder(object):
    Step = 0
    
 class VehicleConfig(object):
-   BodyCircumference = 0    # circumference length of robot for spin in place
+   BodyCircumference = 0   # circumference length of robot for spin in place
    WheelCircumference = 0
    WIDTH = 0.0             # Default Vehicle width in mm
    WHEEL_R = 0.0           # Wheel radius
@@ -133,12 +132,12 @@ class Robot:
          print "**********"
          print "Driving R1"
          print "**********"
-         self.config.WIDTH = 591.0      # Apply vehicle width for R1 version
-         self.config.WHEEL_R = 110      # Apply wheel radius for R1 version
-         self.config.WHEEL_MAXV = 1000.0
-         self.config.JOY_MAXVspeed = 800.0
-         self.config.JOY_MAXVomega = 150
-         self.config.ArrowFwdStep = 250
+         self.config.WIDTH = 0.591      # Apply vehicle width for R1 version
+         self.config.WHEEL_R = 0.11      # Apply wheel radius for R1 version
+         self.config.WHEEL_MAXV = 1200.0
+         self.config.JOY_MAXVspeed = 300
+         self.config.JOY_MAXVomega = 50
+         self.config.ArrowFwdStep = 250   # Steps move forward based on Odometry
          self.config.ArrowRotRate = 1/8
          self.config.encoder.Dir = 1.0
          self.config.encoder.PPR = 1000
@@ -148,8 +147,8 @@ class Robot:
          print "***************"
          print "Driving R1-mini"
          print "***************"
-         self.config.WIDTH = 170.0      # Apply vehicle width for mini version
-         self.config.WHEEL_R = 33.6     # Apply wheel radius for mini version
+         self.config.WIDTH = 0.170      # Apply vehicle width for mini version
+         self.config.WHEEL_R = 0.0336     # Apply wheel radius for mini version
          self.config.WHEEL_MAXV = 500.0
          self.config.JOY_MAXVspeed = 500.0
          self.config.JOY_MAXVomega = 100
@@ -161,13 +160,13 @@ class Robot:
       else :
          print "Only support r1 and mini. exit..."
          exit()
-      print('Wheel Width:{:.2f}mm, Radius:{:.2f}mm'.format(self.config.WIDTH, self.config.WHEEL_R))
+      print('Wheel Width:{:.2f}m, Radius:{:.2f}m'.format(self.config.WIDTH, self.config.WHEEL_R))
       self.config.BodyCircumference = self.config.WIDTH * math.pi
-      print('Platform Rotation arc length: {:04f}mm'.format(self.config.BodyCircumference))
+      print('Platform Rotation arc length: {:04f}m'.format(self.config.BodyCircumference))
       self.config.WheelCircumference = self.config.WHEEL_R * 2 * math.pi
-      print('Wheel circumference: {:04f}mm'.format(self.config.WheelCircumference))
+      print('Wheel circumference: {:04f}m'.format(self.config.WheelCircumference))
       self.config.encoder.Step = self.config.WheelCircumference / (self.config.encoder.PPR * self.config.encoder.GearRatio * 4)
-      print('Platform encoder step: {:04f}mm/pulse'.format(self.config.encoder.Step))
+      print('Platform encoder step: {:04f}m/pulse'.format(self.config.encoder.Step))
       
       print(self.ser.name)         # Print which port was really used
       self.joyAxes = [0,0,0,0,0,0,0,0]
@@ -417,7 +416,6 @@ class Robot:
       self.enc_R_prev = encoderR
       dT = (now - pose.timestamp)/1000000.0
       pose.timestamp = now
-      #print "dT: {:.2f} {:.2f} ".format(dT, deltaL)
       x = pose.x
       y = pose.y
       theta = pose.theta
@@ -425,22 +423,20 @@ class Robot:
       if (dR-dL)==0:
          R = 0.0
       else:
-         R = self.config.WIDTH*(dL+dR)/(dR-dL)
+         R = self.config.WIDTH/2.0*(dL+dR)/(dR-dL)
       Wdt = (dR - dL) * self.config.encoder.Step / self.config.WIDTH
 
       ICCx = x - R * np.sin(theta)
       ICCy = y + R * np.cos(theta)
-      print dT
       pose.x = np.cos(Wdt)*(x - ICCx) - np.sin(Wdt)*(y - ICCy) + ICCx
       pose.y = np.sin(Wdt)*(x - ICCx) + np.cos(Wdt)*(y - ICCy) + ICCy
       pose.theta = theta + Wdt
       
       twist = TwistWithCovariance()
       
-      twist.twist.linear.x = self.vel/1000.0#(pose.x - x)/dT
-      twist.twist.linear.y = 0.0#(pose.y - y)/dT
-
-      twist.twist.angular.z = self.rot/1000.0#(pose.theta - theta)/dT
+      twist.twist.linear.x = self.vel/1000.0
+      twist.twist.linear.y = 0.0
+      twist.twist.angular.z = self.rot/1000.0
       
       Vx = twist.twist.linear.x
       Vy = twist.twist.linear.y
@@ -451,12 +447,11 @@ class Robot:
       odom = Odometry()
       odom.header.stamp = now
       odom.header.frame_id = 'odom'
-      
       odom.pose.pose = Pose(Point(pose.x,pose.y,0.),Quaternion(*odom_quat))
       
       odom.child_frame_id = 'base_link'
       odom.twist.twist = Twist(Vector3(Vx,Vy,0),Vector3(0,0,Vth))
-      print "x,y: {:.2f} {:.2f} {:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
+      #print "x,y: {:.2f} {:.2f} {:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
       self.odom_pub.publish(odom)
       return pose
 
