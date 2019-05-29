@@ -84,7 +84,7 @@ $ rosrun omoros driver_r1.py mini
 로봇의 조작 방법은 아래 그림을 참조하시기 바랍니다.
 
 <div align="center">
-  <img src="images/joystick.png">
+  <img src="images/joystick.png" width="500" height="300">
 </div>
 
  - 기본적인 조작 방법은 스틱을 앞/뒤, 좌/우로 조작하여 움직이는 것입니다.
