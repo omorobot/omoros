@@ -39,7 +39,7 @@ tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 
 <img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
 </div>
 
-### 1.1 Dependency
+### 1.3 Dependency
 
 드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
 
