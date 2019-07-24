@@ -39,7 +39,7 @@ tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 
 <img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
 </div>
 
-### 1.1 Dependency
+### 1.3 Dependency
 
 드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
 
@@ -79,18 +79,33 @@ R1-mini 버전은 다음 명령어로 실행합니다.
 ```
 $ rosrun omoros driver_r1.py mini
 ```
+### 2.2 조작 방법
 
-### 2.1 Messages
+로봇의 조작 방법은 아래 그림을 참조하시기 바랍니다.
+
+<div align="center">
+  <img src="images/joystick.png" width="500" height="300">
+</div>
+
+ - 기본적인 조작 방법은 스틱을 앞/뒤, 좌/우로 조작하여 움직이는 것입니다.
+ - 스틱의 버튼을 누르면 방향키 모드로 전환하여 일정 거리, 각도만큼 움직입니다.
+ - 버튼의 A키 혹은 1번 키를 누르면 조이스틱 조종을 해제하고 cmd_vel 메세지의 속도/회전속도 명령으로 동작합니다.
+ 
+조이스틱 조작에서 에러가 발생하는 경우 [다음](#joystick)을 참조 바랍니다.
+
+### 2.3 Messages
 이 드라이버는 다음과 같은 메세지들을 Publish 혹은 Subscribe 합니다.
 ```
 $ rostopic list
 /R1Command
+/cmd_vel
 /diagnostics
 /joy
 /joy/set_feedback
 /motor/encoder/left
 /motor/encoder/right
 /motor/status
+/odom
 ```
 
 **Subscribed message**
@@ -103,6 +118,11 @@ $ rostopic list
   - mode : 제어 방식을 선택합니다. 0은 속도와 회전속도(Vl, Vr) 1은 좌/우 바퀴 속도(WheelL, WheelR)로 제어하는 방식입니다.
   - Vl, Vr : 로봇의 속도와 회전속도를 설정합니다. 단위는 각각 mm/s, mrad/s 입니다.
   - WheelL, WheelR: 바퀴의 속도를 설정합니다. 단위는 mm/s 입니다.
+  
+* cmd_vel
+  - http://wiki.ros.org/Robots/TIAGo/Tutorials/motions/cmd_vel
+  - cmd.linear.x : 로봇의 종방향 속도 m/s
+  - cmd.angular.z : 로봇의 회전 속도 rad/s
 
 **Publish message**
 
@@ -114,8 +134,11 @@ $ rostopic list
   <img src="images/topic_motor_status.png">
 </div>
 
-* odom: Navigation에 필요한 속도/회전속도 등을 전송합니다. (향후 지원 예정)
-
+* odom: Navigation에 필요한 속도/회전속도, 위치를 전송합니다.
+ - "odom" 의 하위 링크는 "base_link" 입니다.
+<div align="center">
+  <img src="images/topic_odom.png">
+</div>
 
 ## 3. Trouble shooting
 
@@ -148,7 +171,25 @@ Raspberry PI의 내장 시리얼포트를 사용하기 위해서는 경로를 �
 
 '/dev/ttyS0'
 
+### 3.2 <a name="joystick"> Joystick index Error </a>
 
+조이스틱의 특정 버튼을 눌렀을때 에러가 발생할 수 있습니다.
+이것은 조이스틱에 따라 axes와 buttons에 할당된 index 번호가 다르기 때문입니다.
+
+rostopic echo joy 명령으로 조이스틱에 할당된 axes와 buttons의 index 위치가 바뀌었다면
+callbackJoy 함수에서 해당 번호를 수정해야합니다. self.joyAxes[#] 혹은 self.joyButtons[#] 부분
+```
+---
+header: 
+  seq: 14
+  stamp: 
+    secs: 1559113339
+    nsecs: 939150960
+  frame_id: ''
+axes: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+---
+```
 
 Copyright (c) 2019, OMOROBOT Inc.,
 
