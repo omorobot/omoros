@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+   <arg name="multi_robot_name" default=""/>
+   <node respawn="true" pkg="joy" type="joy_node" name="teleop_joy"/>
+   <node pkg="omoros" type="driver_r1.py" name="omoros" args="r1" output="screen"/>
+</launch>

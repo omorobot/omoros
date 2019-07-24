@@ -94,7 +94,7 @@ class Command:
    speedR = 0.0      # Right wheel speed mm/s
 
 class Robot:
-   ser = serial.Serial('/dev/ttyUSB0', 115200)
+   ser = serial.Serial('/dev/omoros', 115200)
    #ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
    ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                            newline = '\r',
@@ -135,10 +135,10 @@ class Robot:
          self.config.WIDTH = 0.591        # Apply vehicle width for R1 version
          self.config.WHEEL_R = 0.11       # Apply wheel radius for R1 version
          self.config.WHEEL_MAXV = 1200.0  # Maximum speed can be applied to each wheel (mm/s)
-         self.config.V_Limit = 1.0       # Limited speed (m/s)
+         self.config.V_Limit = 1.0        # Limited speed (m/s)
          self.config.W_Limit = 0.1
-         self.config.V_Limit_JOY = 0.3    # Limited speed for joystick control
-         self.config.W_Limit_JOY = 0.1
+         self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
+         self.config.W_Limit_JOY = 0.05
          self.config.ArrowFwdStep = 250   # Steps move forward based on Odometry
          self.config.ArrowRotRate = 0.125
          self.config.encoder.Dir = 1.0
@@ -201,7 +201,6 @@ class Robot:
       
       # Subscriber
       rospy.Subscriber("joy", Joy, self.callbackJoy)
-      rospy.Subscriber("R1Command", R1Command, self.callbackCommand)
       rospy.Subscriber("cmd_vel", Twist, self.callbackCmdVel)
       
       # publisher
@@ -342,30 +341,25 @@ class Robot:
          arrowCon.targetOdo_L = self.odo_L + config.BodyCircumference*1000*config.ArrowRotRate
          arrowCon.targetOdo_R = self.odo_R - config.BodyCircumference*1000*config.ArrowRotRate
          print "Arrow Right"
-   
-   def callbackCommand(self, data):
-      if self.cmd.isAlive != True:
-         self.cmd.isAlive = True
-      self.cmd.cnt = 0        #Reset counter
-      self.mode = data.mode
-      self.vel = data.velocity
-      self.rot = data.rotation
-      if mode == 0:   #Control by velocity and twist
-         (self.cmd.speedL, self.cmd.speedR) = self.getWheenSpeed(vel, rot) 
-      else :
-         self.cmd.speedL = lSpeed
-         self.cmd.speedR = rSpeed
-      if self.isAutoMode == True:
-         self.sendCDIFFVcontrol(speedL, speedR)
+
          
    def callbackCmdVel(self, cmd):
       """ Set wheel speed from cmd message from auto navigation """
       if self.isAutoMode:
-         (Vl,Vr) = self.getWheenSpeed(cmd.linear.x, cmd.angular.z)
-         self.sendCDIFFVcontrol(speedL*1000, speedR*1000)
-      #v = (data.linear.x) * 1000
-      #w = (data.angular.z) * 1000
-      #self.sendCVWcontrol(self.config, v, w)
+         #print "CMD_VEL: {:.2f} {:.2f} ".format(cmd.linear.x, cmd.angular.z)
+         cmdV = cmd.linear.x
+         cmdW = cmd.angular.z
+         if cmdV>self.config.V_Limit:
+            cmdV = self.config.V_Limit
+         elif cmdV<-self.config.V_Limit:
+            cmdV = -self.config.V_Limit
+         if cmdW>self.config.W_Limit:
+            cmdW = self.config.W_Limit
+         elif cmdW<-self.config.W_Limit:
+            cmdW = -self.config.W_Limit
+         (speedL,speedR) = self.getWheelSpeedLR(self.config, cmdV, cmdW)
+         #print "SPEED LR: {:.2f} {:.2f} ".format(speedL, speedR)
+         self.sendCDIFFVcontrol(speedL*200, speedR*200)
 
    def reset_odometry(self):
       self.last_speedL = 0.0
@@ -501,7 +495,9 @@ class Robot:
          W_mrad_s = -config.W_Limit
       # Make a serial message to be sent to motor driver unit
       cmd = '$CVW,{:.0f},{:.0f}'.format(V_mm_s, W_mrad_s)
+      print cmd
       if self.ser.isOpen():
+         print cmd
          self.ser.write(cmd+"\r"+"\n")
 
    def sendCDIFFVcontrol(self, VLmm_s, VRmm_s):
@@ -517,6 +513,7 @@ class Robot:
       # Make a serial message to be sent to motor driver unit
       cmd = '$CDIFFV,{:.0f},{:.0f}'.format(VLmm_s, VRmm_s)
       if self.ser.isOpen():
+         #print cmd
          self.ser.write(cmd+"\r"+"\n")
                     
    def setREGI(self, param1, param2):
