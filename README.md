@@ -97,7 +97,7 @@ $ rosrun omoros driver_r1.py mini
 이 드라이버는 다음과 같은 메세지들을 Publish 혹은 Subscribe 합니다.
 ```
 $ rostopic list
-/R1Command
+
 /cmd_vel
 /diagnostics
 /joy
@@ -107,6 +107,7 @@ $ rostopic list
 /motor/status
 /odom
 ```
+R1Command 메세지는 삭제되고 cmd_vel 명령으로 대체됨
 
 **Subscribed message**
 
@@ -114,11 +115,7 @@ $ rostopic list
   - Axis: Joystick의 스틱 입력을 받아 좌/우 바퀴의 회전 속도를 제어합니다.
   - BUttons: 1번 버튼(A) 입력으로 조이스틱 조종 및 자동주행을 선택합니다.
 
-* R1Command 
-  - mode : 제어 방식을 선택합니다. 0은 속도와 회전속도(Vl, Vr) 1은 좌/우 바퀴 속도(WheelL, WheelR)로 제어하는 방식입니다.
-  - Vl, Vr : 로봇의 속도와 회전속도를 설정합니다. 단위는 각각 mm/s, mrad/s 입니다.
-  - WheelL, WheelR: 바퀴의 속도를 설정합니다. 단위는 mm/s 입니다.
-  
+
 * cmd_vel
   - http://wiki.ros.org/Robots/TIAGo/Tutorials/motions/cmd_vel
   - cmd.linear.x : 로봇의 종방향 속도 m/s

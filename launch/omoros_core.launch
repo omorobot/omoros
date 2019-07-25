@@ -2,6 +2,27 @@
 
 <launch>
    <arg name="multi_robot_name" default=""/>
+   
+   <include file="$(find omoros)/launch/includes/description.launch.xml">
+   </include>
+   
    <node respawn="true" pkg="joy" type="joy_node" name="teleop_joy"/>
    <node pkg="omoros" type="driver_r1.py" name="omoros" args="r1" output="screen"/>
+
+
+   <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
+         args="0.0 0.0 0.0 0 0 0.0 /map /odom 40" />
+   <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint" 
+         args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_footprint 40" />
+
+      
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_left_link" 
+         args="0.0  0.29 0.11 0.0 0.0 0.0 /base_link /wheel_left_link 40" />
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_right_link" 
+         args="0.0 -0.29 0.11 0.0 0.0 0.0 /base_link /wheel_right_link 40" />
+  
+   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+   </node>
 </launch>

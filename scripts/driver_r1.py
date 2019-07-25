@@ -41,7 +41,6 @@ from std_msgs.msg import UInt8, Int8, Int16, Float64, Float32
 from std_msgs.msg import Header
 from std_srvs.srv import Trigger
 from omoros.msg import R1MotorStatusLR, R1MotorStatus
-from omoros.msg import R1Command
 
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
@@ -464,6 +463,7 @@ class Robot:
       Vth = twist.twist.angular.z
       odom_quat = quaternion_from_euler(0,0,pose.theta)
       self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_link','odom')
+      #self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_footprint','odom')
       
       odom = Odometry()
       odom.header.stamp = now
@@ -471,6 +471,7 @@ class Robot:
       odom.pose.pose = Pose(Point(pose.x,pose.y,0.),Quaternion(*odom_quat))
       
       odom.child_frame_id = 'base_link'
+      #odom.child_frame_id = 'base_footprint'
       odom.twist.twist = Twist(Vector3(Vx,Vy,0),Vector3(0,0,Vth))
       #print "x:{:.2f} y:{:.2f} theta:{:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
       self.odom_pub.publish(odom)

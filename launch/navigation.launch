@@ -1,21 +1,18 @@
 <?xml version="1.0"?>
 
 <launch>
-   <arg name="map_file" default="$(find omoros)/navigation/maps/map.yaml"/>
-   <arg name="open_rviz" default="true"/>
-   <arg name="move_forward_only" default="false"/>
+  <arg name="map_file" default="$(find omoros)/navigation/maps/map.yaml"/>
+  <arg name="open_rviz" default="true"/>
+  <arg name="move_forward_only" default="false"/>
    
   <!-- Launch hector slam with ydlidar -->    
-  <include file="$(find omoros)/launch/lidar.launch" />
+  <include file="$(find omoros)/launch/lidar.launch" />   
 
-  <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
-        args="0.0 0.0 0.0 0 0 0.0 /map /odom 40" />
-  <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint" 
-        args="0.0 0.0 0.0 0 0 0.0 /odom /base_footprint 40" />
-  <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
-        args="0.0 0.0 0.0 0 0 0.0 /base_footprint /base_link 40" />
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
         args="0.0 0.0 0.2 0.0 0.0 0.0 /base_link /laser_frame 40" />
+ <!--  <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
+         args="0.0 0.0 0.0 0.0 0.0 3.14 /base_footprint /base_link 40" /> -->
+
         
   <include file="$(find hector_mapping)/launch/mapping_default.launch" />
   <!-- Map server -->
