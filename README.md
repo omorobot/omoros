@@ -92,6 +92,13 @@ R1 및 R1-mini 버전에 따라 modelName을 r1 혹은 mini로 지정합니다.
 $ roslaunch omoros omoros_core.launch
 ```
 
+실행 후 rosrun rviz rviz 명령을 통해 아래 그림과 같이 로봇 모델이 생성되고 조이스틱 명령에 따라 이동하는것을 확인할 수 있습니다.
+
+<div align="center">
+  <img src="images/omoros_rviz.png">
+</div>
+
+
 ### 2.2 조작 방법
 
 로봇의 조작 방법은 아래 그림을 참조하시기 바랍니다.

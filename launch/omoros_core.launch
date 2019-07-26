@@ -29,5 +29,5 @@
     <param name="publish_frequency" type="double" value="50.0" />
     <param name="tf_prefix" value="$(arg multi_robot_name)"/>
    </node>
-<!--  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find omoros)/r1_description/rviz/model.rviz" />-->
+ <!--<node pkg="rviz" type="rviz" name="rviz" args="-d $(find omoros)/r1_description/rviz/model.rviz" />-->
 </launch>
