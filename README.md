@@ -55,30 +55,43 @@ Joy: [ROS JOY](http://wiki.ros.org/joy)
 
 tf: [ROS TF](http://wiki.ros.org/tf)
 
+### 1.4 Serial Port 설정
+
+USB to Serial 포트를 연결하고 시리얼포트의 경로를 확인합니다. 보통 /dev/ttyUSB# 등으로 설정되어있습니다.
+
+기존에 다른 시리얼포트가 연결되어있는 경우 연결 순서에 따라 경로가 바뀔 수 있으므로 /etc/udev/rules.d 에서 경로를 지정할 필요가 있습니다.
+
+또는 bringup 폴더에 있는 create_udev_rules 스크립트를 실행하여 규칙을 추가하면 항상 /dev/ttyMotor 라는 경로로 고정됩니다.
+
+
 ## 2. How to use
 
-### 2.1 Launching Driver Node
+### 2.1 Launching omoros_core
 
-roscore가 실행중인 상태에서 joy 노드를 실행합니다.
-```
-$ rosrun joy joy_node
-```
+launch 폴더에는 omoros 실행을 위한 launch 파일들이 존재합니다.
 
-R1 및 R1-mini 버전에 따라 아래와 같이 입력하여 OMOROS 드라이버를 실행합니다. 
+조이스틱을 통한 원격 조작을 시험하기 위해서는 omoros_core.launch 파일만 실행하면 됩니다.
+
+먼저 omoros_core.launch 파일을 열어 다음 항목을 찾아봅니다.
+
+```
+<node pkg="omoros" type="driver_r1.py" name="omoros" output="screen">
+   <param name="port" value="/dev/ttyMotor"/>
+   <param name="baud" value="115200"/>
+   <param name="modelName" value="r1"/>
+</node>
+```
+R1 및 R1-mini 버전에 따라 modelName을 r1 혹은 mini로 지정합니다. 
 
 **주의** 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
 
 시리얼 포트 관련 문제는 [다음](#serial)을 참조 바랍니다.
 
-R1 로봇은 아래 명령으로 실행합니다.
+이제 콘솔 창에 다음과 같이 입력하여 실행합니다.
 ```
-$ rosrun omoros driver_r1.py r1
+$ roslaunch omoros omoros_core.launch
 ```
 
-R1-mini 버전은 다음 명령어로 실행합니다.
-```
-$ rosrun omoros driver_r1.py mini
-```
 ### 2.2 조작 방법
 
 로봇의 조작 방법은 아래 그림을 참조하시기 바랍니다.
@@ -107,7 +120,7 @@ $ rostopic list
 /motor/status
 /odom
 ```
-R1Command 메세지는 삭제되고 cmd_vel 명령으로 대체됨
+R1Command 메세지는 삭제되고 cmd_vel 명령으로 대체되었습니다.
 
 **Subscribed message**
 
@@ -157,11 +170,10 @@ $ sudo gpasswd -a UserName dialout
 
 시리얼 포트의 경로를 확인합니다.
 
-scripts/driver_r1.py를 열고 다음 코드의 내용을 수정합니다.
+launch/omoros_core.launch를 열고 다음 코드의 내용을 수정합니다.
 
 ```
-   #ser = serial.Serial('/dev/ttyUSB0', 115200)
-   ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
+      <param name="port" value="/dev/ttyMotor"/>
 ```
 
 Raspberry PI의 내장 시리얼포트를 사용하기 위해서는 경로를 아래와같이 설정합니다.

@@ -35,6 +35,7 @@ import serial
 import io
 import numpy as np
 import math
+import os
 
 from time import sleep
 from std_msgs.msg import UInt8, Int8, Int16, Float64, Float32
@@ -93,7 +94,14 @@ class Command:
    speedR = 0.0      # Right wheel speed mm/s
 
 class Robot:
-   ser = serial.Serial('/dev/omoros', 115200)
+   rospy.init_node('omoros', anonymous=True)
+   # fetch /global parameters
+   param_port = rospy.get_param('~port')
+   param_baud = rospy.get_param('~baud')
+   param_modelName = rospy.get_param('~modelName')
+   
+   # Open Serial port with parameter settings
+   ser = serial.Serial(param_port, param_baud)
    #ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
    ser_io = io.TextIOWrapper(io.BufferedRWPair(ser, ser, 1),
                            newline = '\r',
@@ -125,9 +133,9 @@ class Robot:
    speedR = 0.0         # Reft Wheel speed returned from QDIFF message
    vel = 0.0            # Velocity returned from CVW command
    rot = 0.0            # Rotational speed returned from CVR command
-   def __init__(self, arg):
+   def __init__(self):
       ## Set vehicle specific configurations
-      if arg == "r1":
+      if self.param_modelName == "r1":
          print "**********"
          print "Driving R1"
          print "**********"
@@ -161,7 +169,7 @@ class Robot:
          self.config.encoder.PPR = 234
          self.config.encoder.GearRatio = 21         
       else :
-         print "Only support r1 and mini. exit..."
+         print "Error: param:modelName, Only support r1 and mini. exit..."
          exit()
       print('Wheel Track:{:.2f}m, Radius:{:.2f}m'.format(self.config.WIDTH, self.config.WHEEL_R))
       self.config.BodyCircumference = self.config.WIDTH * math.pi
@@ -196,8 +204,6 @@ class Robot:
          sleep(0.05)
          
       self.reset_odometry()   
-      rospy.init_node('omoros', anonymous=True)
-      
       # Subscriber
       rospy.Subscriber("joy", Joy, self.callbackJoy)
       rospy.Subscriber("cmd_vel", Twist, self.callbackCmdVel)
@@ -533,11 +539,12 @@ class Robot:
       self.ser.write("$SODO\r\n")
         
 if __name__ == '__main__':
-   if len(sys.argv) < 2:
-      print "Must enter either mini or r1"
-      exit()
+
+   #if len(sys.argv) < 2:
+   #   print "Must enter either mini or r1"
+   #   exit()
    try:
-      Robot(sys.argv[1])
+      Robot()
    except rospy.ROSInterruptException:
       pass
     

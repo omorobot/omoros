@@ -8,14 +8,14 @@
   <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link" />
-    <origin xyz="0 0 0.050" rpy="0 0 0.0"/>
+    <origin xyz="0 0.0 0.050" rpy="0 0 0.0"/>
   </joint>
 
   <link name="base_link">
     <visual>
-      <origin xyz="-0.2 0 0.0" rpy="0 0 0.0"/>
+      <origin xyz="0.1 0.28 0.25" rpy="3.14 0 -1.57"/>
       <geometry>
-        <mesh filename="file://$(arg meshDirectory)bases/waffle_pi_base.stl" scale="0.0025 0.0016 0.0025"/>
+        <mesh filename="file://$(arg meshDirectory)bases/R1_body.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="light_black"/>
     </visual>
@@ -39,15 +39,15 @@
   <joint name="wheel_left_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_left_link"/>
-    <origin xyz="0.0 0.29 0.11" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 0.29 0.10" rpy="1.57 0.0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
   <link name="wheel_left_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0.0 0 0"/>
+      <origin xyz="-0.11 -0.07 0.10" rpy="-1.57 0 0"/>
       <geometry>
-        <mesh filename="file://$(arg meshDirectory)wheels/left_tire.stl" scale="0.0035 0.0035 0.0035"/>
+        <mesh filename="file://$(arg meshDirectory)wheels/wheel.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -71,15 +71,15 @@
   <joint name="wheel_right_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_right_link"/>
-    <origin xyz="0.0 -0.29 0.11" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 -0.29 0.10" rpy="-1.57 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
   <link name="wheel_right_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0.0 0 0"/>
+      <origin xyz="-0.11 0.07 -0.122" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="file://$(arg meshDirectory)wheels/right_tire.stl" scale="0.0035 0.0035 0.0035"/>
+        <mesh filename="file://$(arg meshDirectory)wheels/wheel.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -103,14 +103,14 @@
   <joint name="caster_back_right_joint" type="fixed">
     <parent link="base_link"/>
     <child link="caster_back_right_link"/>
-    <origin xyz="-0.177 -0.064 -0.004" rpy="-1.57 0 0"/>
+    <origin xyz="-0.38 -0.16 0.06" rpy="-1.57 0 0"/>
   </joint>
 
   <link name="caster_back_right_link">
     <collision>
       <origin xyz="0 0.001 0" rpy="0 0 0"/>
       <geometry>
-        <box size="0.030 0.009 0.020"/>
+        <box size="0.040 0.02 0.020"/>
       </geometry>
     </collision>
 
@@ -126,7 +126,7 @@
   <joint name="caster_back_left_joint" type="fixed">
     <parent link="base_link"/>
     <child link="caster_back_left_link"/>
-    <origin xyz="-0.177 0.064 -0.004" rpy="-1.57 0 0"/>
+    <origin xyz="-0.38 0.16 0.06" rpy="-1.57 0 0"/>
   </joint>
 
   <link name="caster_back_left_link">
