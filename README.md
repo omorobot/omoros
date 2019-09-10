@@ -69,8 +69,25 @@ USB to Serial 포트를 연결하고 시리얼포트의 경로를 확인합니�
 
 기존에 다른 시리얼포트가 연결되어있는 경우 연결 순서에 따라 경로가 바뀔 수 있으므로 /etc/udev/rules.d 에서 경로를 지정할 필요가 있습니다.
 
-또는 bringup 폴더에 있는 create_udev_rules 스크립트를 실행하여 규칙을 추가하면 항상 /dev/ttyMotor 라는 경로로 고정됩니다.
+lsusb 명령어를 통해 USB-Serial port의 idVendor와 idProduct를 확인합니다.
+```
+$ lsusb
+Bus 001 Device 029: ID <span style="color:red">0403:6001</span> Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC
+```
+여기에서 ID 뒤에 나온 숫자 앞부분"0403"이 idVendor이고 뒷부분 "6001"이 idProduct입니다.
+bringup 폴더로 이동하여 99-omoros.rules 파일을 열고 해당 항목을 수정합니다.
+```
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE:="0666", GROUP:="dialout", SYMLINK+="ttyMotor"
+```
+이제 create_udev_rules 스크립트를 실행하여 규칙을 추가하면 항상 /dev/ttyMotor 라는 경로로 고정됩니다.
+```
+$ ./create_udev_rules
+This script copies a udev rule to /etc/udev/rules.d/ to fix serial port path 
+to /dev/ttyMotor for omoros driver.
 
+
+Reload rules
+```
 
 ## 2. How to use
 
