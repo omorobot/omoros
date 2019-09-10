@@ -72,7 +72,7 @@ USB to Serial 포트를 연결하고 시리얼포트의 경로를 확인합니�
 lsusb 명령어를 통해 USB-Serial port의 idVendor와 idProduct를 확인합니다.
 ```
 $ lsusb
-Bus 001 Device 029: ID <span style="color:red">0403:6001</span> Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC
+Bus 001 Device 029: ID 0403:6001 Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC
 ```
 여기에서 ID 뒤에 나온 숫자 앞부분"0403"이 idVendor이고 뒷부분 "6001"이 idProduct입니다.
 bringup 폴더로 이동하여 99-omoros.rules 파일을 열고 해당 항목을 수정합니다.
