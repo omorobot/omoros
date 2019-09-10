@@ -232,5 +232,61 @@ buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ---
 ```
 
+## 4 SLAM Mapping & Navigation
+
+R-1 로봇에 YDLidar와 같은 2D 라이다 센서를 장착하면 SLAM 기술을 적용하여 맵을 생성하고 항법에 적용할 수 있습니다.
+OMOROS는 omoros_navigation.launch 파일을 구동하여 ROS의 SLAM 패키지를 활용한 매핑과 네비게이션을 테스트할 수 있는 환경을 제공합니다.
+
+### 4.1 Requirements
+
+ - YDLidar 는 https://smartstore.naver.com/omorobot/products/4445001397 에서 구매할 수 있습니다.
+ - ROS는 Desktop-Full 로 설치되어야 합니다. 
+ - omoros_navigation.launch 파일을 구동하기 위해서는 다음과 같은 패키지가 필요합니다.
+
+### Install YDLidar
+
+catkin_ws의 src폴더로 이동하여 패키지를 다운로드합니다.
+```
+$ git clone https://github.com/EAIBOT/ydlidar.git
+```
+catkin_make 명령으로 패키지를 설치합니다.
+```
+$ catkin_make --pkg ydlidar
+```
+startup 폴더로 이동하여 initenv.sh 스크립트를 실행하여 usb 장치를 설치합니다.
+
+자세한 설치 방법은 https://github.com/EAIBOT/ydlidar 를 참조하시기 바랍니다.
+
+### Install Hector SLAM Package
+
+apt 명령어로 다음과 같은 패키지들을 설치합니다.(ROS-Melodic 기준)
+```
+$ sudo apt-get install libsdl-image1.2-dev
+
+$ sudo apt install ros-melodic-amcl
+
+$ sudo apt install ros-melodic-navigation
+
+```
+빌드 관련 라이브러리 설치
+```
+$ sudo apt install libqt4-dev
+```
+다시 catkin_ws의 src 폴더로 이동하여 hector slam 코드를 다운로드하고 melodic-devel 브렌치로 checkout 합니다.
+```
+$ git clone https://github.com/tu-darmstadt-ros-pkg/hector_slam.git
+$ cd hector_slam
+$ git checkout melodic-devel
+```
+이제 catkin_make 명령으로 코드를 빌드합니다.
+
+### 4.2 Launch omoros navigation
+
+빌드가 완료되면 roslaunch 명령으로 네비게이션 패키지를 실행할 수 있습니다.
+```
+$ roslaunch omoros omoros_navigation.launch 
+```
+
+
 Copyright (c) 2019, OMOROBOT Inc.,
 
