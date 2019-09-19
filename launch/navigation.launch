@@ -7,18 +7,18 @@
    
   <!-- Launch hector slam with ydlidar -->    
   <include file="$(find omoros)/launch/lidar.launch" />   
-
-  <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
-        args="0.0 0.0 0.2 0.0 0.0 0.0 /base_link /laser_frame 40" />
- <!--  <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
+<!--  <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
+        args="0.0 0.0 0.2 0.0 0.0 0.0 /base_link /laser_frame 40" /> -->
+<!--  <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
          args="0.0 0.0 0.0 0.0 0.0 3.14 /base_footprint /base_link 40" /> -->
 
-        
-  <include file="$(find hector_mapping)/launch/mapping_default.launch" />
+  <!-- Launch hector mapping -->        
+  <include file="$(find omoros)/launch/hector_mapping.launch" />
+
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
    
-   <!-- AMCL -->
+  <!-- AMCL -->
   <include file="$(find omoros)/launch/amcl.launch"/>
 
   <!-- move_base -->
