@@ -3,32 +3,53 @@
 <launch>
    <arg name="multi_robot_name" default=""/>
    
-   <include file="$(find omoros)/launch/includes/description.launch.xml">
-   </include>
+   <include file="$(find omoros)/launch/includes/description.launch.xml"/>
+
+   <!-- Launch ydlidar -->    
+   <!--<include file="$(find omoros)/launch/lidar.launch" />   -->
+   
    
    <node respawn="true" pkg="joy" type="joy_node" name="teleop_joy"/>
    <node pkg="omoros" type="driver_r1.py" name="omoros" output="screen">
       <param name="port" value="/dev/ttyMotor"/>
       <param name="baud" value="115200"/>
       <param name="modelName" value="r1"/>
+      <param name="maxVel" value="1.0"/>
+      <param name="maxRotVel" value="0.05"/>
    </node>
 
-
-   <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
-         args="0.0 0.0 0.0 0 0 0.0 /map /odom 40" />
-   <node pkg="tf" type="static_transform_publisher" name="odom_to_basefootprint" 
+<!--
+   <node pkg="tf" type="static_transform_publisher" name="odom_to_base_footprint" 
          args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_footprint 40" />
 
-      
+   <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
+         args="0.0 0.0 0.0 0.0 0.0 0.0 /base_footprint /base_link 40" />
+ 
+   <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
+         args="0.0 0.0 0.0 0.0 0.0 0.0 /map /odom 40" />
+ -->
+<!--
+   <node pkg="tf" type="static_transform_publisher" name="odom_to_base_link" 
+         args="0.0 0.0 0.0 0.0 0.0 0.0 /odom /base_link 40" />
+
    <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_left_link" 
-         args="0.0  0.29 0.11 0.0 0.0 0.0 /base_link /wheel_left_link 40" />
+         args="0.0 0.29 0.1 0.0 0.0 0.0 /base_link /wheel_left_link 40" />
 
    <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_right_link" 
-         args="0.0 -0.29 0.11 0.0 0.0 0.0 /base_link /wheel_right_link 40" />
-  
+         args="0.0 -0.29 0.1 0.0 0.0 0.0 /base_link /wheel_right_link 40" />
+
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_base_scan" 
+         args="0.0 0.0 0.1 0.0 0.0 0.0 /base_link /base_scan 40" />
+-->
+   <!-- State Publisher -->
+  <arg name="model" default="$(find omoros)/r1_description/urdf/r1.urdf"/>
+  <arg name="gui" default="false"/>
+  <param name="robot_description" textfile="$(arg model)"/>
+  <param name="use_gui" value="$(arg gui)"/>
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="50.0" />
     <param name="tf_prefix" value="$(arg multi_robot_name)"/>
    </node>
- <!--<node pkg="rviz" type="rviz" name="rviz" args="-d $(find omoros)/r1_description/rviz/model.rviz" />-->
+   <!--<node pkg="rviz" type="rviz" name="rviz" args="-d $(find omoros)/r1_description/rviz/model.rviz" /> --> 
 </launch>

@@ -46,16 +46,17 @@ from omoros.msg import R1MotorStatusLR, R1MotorStatus
 from copy import copy, deepcopy
 from sensor_msgs.msg import Joy
 
-from geometry_msgs.msg import Twist, TwistWithCovariance, Pose, Point, Vector3, Quaternion
+from geometry_msgs.msg import Twist, TwistWithCovariance, PoseWithCovariance, Point, Vector3, Quaternion
+from geometry_msgs.msg import TransformStamped
 from tf.broadcaster import TransformBroadcaster
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler
 
-class MyPose(object):
-   x = 0
-   y = 0
-   theta = 0
-   timestamp = 0
+#class MyPose(object):
+#   x = 0
+#   y = 0
+#   theta = 0
+#   timestamp = 0
 
 class ArrowCon:
    setFwd = 0           # 1:Fwd, -1: Rev
@@ -99,6 +100,8 @@ class Robot:
    param_port = rospy.get_param('~port')
    param_baud = rospy.get_param('~baud')
    param_modelName = rospy.get_param('~modelName')
+   param_max_vel = rospy.get_param('~maxVel')
+   param_max_rotVel = rospy.get_param('~maxRotVel')
    
    # Open Serial port with parameter settings
    ser = serial.Serial(param_port, param_baud)
@@ -107,7 +110,7 @@ class Robot:
                            newline = '\r',
                            line_buffering = True)
    config = VehicleConfig()
-   pose = MyPose()
+   #pose = MyPose()
    joyAxes = []
    joyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]    # Buttons 15
    joyDeadband = 0.15
@@ -142,8 +145,8 @@ class Robot:
          self.config.WIDTH = 0.591        # Apply vehicle width for R1 version
          self.config.WHEEL_R = 0.11       # Apply wheel radius for R1 version
          self.config.WHEEL_MAXV = 1200.0  # Maximum speed can be applied to each wheel (mm/s)
-         self.config.V_Limit = 1.0        # Limited speed (m/s)
-         self.config.W_Limit = 0.1
+         self.config.V_Limit = self.param_max_vel        # Limited speed (m/s)
+         self.config.W_Limit = self.param_max_rotVel
          self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
          self.config.W_Limit_JOY = 0.05
          self.config.ArrowFwdStep = 250   # Steps move forward based on Odometry
@@ -159,8 +162,8 @@ class Robot:
          self.config.WIDTH = 0.170      # Apply vehicle width for mini version
          self.config.WHEEL_R = 0.0336     # Apply wheel radius for mini version
          self.config.WHEEL_MAXV = 500.0
-         self.config.V_Limit = 0.5
-         self.config.W_Limit = 0.2
+         self.config.V_Limit = self.param_max_vel
+         self.config.W_Limit = self.param_max_rotVel
          self.config.V_Limit_JOY = 0.5
          self.config.W_Limit_JOY = 0.1
          self.config.ArrowFwdStep = 100
@@ -215,7 +218,7 @@ class Robot:
       self.pub_enc_l = rospy.Publisher('motor/encoder/left', Float64, queue_size=10)
       self.pub_enc_r = rospy.Publisher('motor/encoder/right', Float64, queue_size=10)
       self.pub_motor_status = rospy.Publisher('motor/status', R1MotorStatusLR, queue_size=10)
-      self.odom_pub = rospy.Publisher("odom", Odometry, queue_size=10)
+      self.pub_odom = rospy.Publisher("odom", Odometry, queue_size=10)
       self.odom_broadcaster = TransformBroadcaster()
       
       rate = rospy.Rate(rospy.get_param('~hz', 30)) # 30hz
@@ -381,7 +384,8 @@ class Robot:
       else:
          return
       if not self.isArrowMode:
-         # Apply joystick deadband and calculate vehicle speed (mm/s) and rate of chage of orientation(rad/s)
+         # Apply joystick deadband and calculate vehicle speed (mm/s) 
+         # and rate of chage of orientation(rad/s)
          joyV = 0.0
          joyR = 0.0
          if abs(self.joy_v) < self.joyDeadband:
@@ -445,8 +449,8 @@ class Robot:
       self.enc_R_prev = encoderR
       dT = (now - pose.timestamp)/1000000.0
       pose.timestamp = now
-      x = pose.x
-      y = pose.y
+      old_x = pose.x
+      old_y = pose.y
       theta = pose.theta
       R = 0.0
       if (dR-dL)==0:
@@ -455,10 +459,10 @@ class Robot:
          R = self.config.WIDTH/2.0*(dL+dR)/(dR-dL)
       Wdt = (dR - dL) * self.config.encoder.Step / self.config.WIDTH
 
-      ICCx = x - R * np.sin(theta)
-      ICCy = y + R * np.cos(theta)
-      pose.x = np.cos(Wdt)*(x - ICCx) - np.sin(Wdt)*(y - ICCy) + ICCx
-      pose.y = np.sin(Wdt)*(x - ICCx) + np.cos(Wdt)*(y - ICCy) + ICCy
+      ICCx = old_x - R * np.sin(theta)
+      ICCy = old_y + R * np.cos(theta)
+      pose.x = np.cos(Wdt)*(old_x - ICCx) - np.sin(Wdt)*(old_y - ICCy) + ICCx
+      pose.y = np.sin(Wdt)*(old_x - ICCx) + np.cos(Wdt)*(old_y - ICCy) + ICCy
       pose.theta = theta + Wdt
       
       twist = TwistWithCovariance()
@@ -483,7 +487,10 @@ class Robot:
       #odom.child_frame_id = 'base_footprint'
       odom.twist.twist = Twist(Vector3(Vx,Vy,0),Vector3(0,0,Vth))
       #print "x:{:.2f} y:{:.2f} theta:{:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
-      self.odom_pub.publish(odom)
+      self.pub_odom.publish(odom)
+      transform = TransformStamped(header=Header(stamp=rospy.Time.now(), frame_id="world"), child_frame_id="omorobot_r1")
+      transform.transform.tranlation.x = pose.pose.position.x
+      
       return pose
 
    def getWheelSpeedLR(self, config, V_m_s, W_rad_s):
@@ -540,6 +547,8 @@ class Robot:
      
    def resetODO(self):
       self.ser.write("$SODO\r\n")
+      self.pose = PoseWithCovariance()
+      self.pose.pose.orientation.w = 1
         
 if __name__ == '__main__':
 

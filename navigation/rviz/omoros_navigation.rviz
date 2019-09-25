@@ -7,8 +7,6 @@ Panels:
         - /TF1
         - /TF1/Frames1
         - /TF1/Tree1/map1/odom1
-        - /TF1/Tree1/map1/odom1/base_footprint1
-        - /TF1/Tree1/map1/odom1/base_footprint1/base_link1
         - /Global Map1/Costmap1
         - /Global Map1/Planner1
         - /Local Map1
@@ -82,8 +80,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_footprint:
-          Value: false
         base_link:
           Value: true
         laser_frame:
@@ -102,10 +98,9 @@ Visualization Manager:
       Tree:
         map:
           odom:
-            base_footprint:
-              base_link:
-                laser_frame:
-                  {}
+            base_link:
+              laser_frame:
+                {}
           scanmatcher_frame:
             {}
       Update Interval: 0
@@ -224,14 +219,6 @@ Visualization Manager:
       Name: Global Map
     - Class: rviz/Group
       Displays:
-        - Alpha: 1
-          Class: rviz/Polygon
-          Color: 0; 0; 0
-          Enabled: true
-          Name: Polygon
-          Topic: /move_base/local_costmap/footprint
-          Unreliable: false
-          Value: true
         - Alpha: 0.699999988079071
           Class: rviz/Map
           Color Scheme: costmap
