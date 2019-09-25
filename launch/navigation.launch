@@ -5,15 +5,19 @@
   <arg name="open_rviz" default="true"/>
   <arg name="move_forward_only" default="false"/>
    
-  <!-- Launch hector slam with ydlidar -->    
+  <!-- Launch ydlidar -->    
   <include file="$(find omoros)/launch/lidar.launch" />   
 <!--  <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
         args="0.0 0.0 0.2 0.0 0.0 0.0 /base_link /laser_frame 40" /> -->
 <!--  <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link" 
          args="0.0 0.0 0.0 0.0 0.0 3.14 /base_footprint /base_link 40" /> -->
 
-  <!-- Launch hector mapping -->        
+  <!-- Launch gmapping -->        
+  <include file="$(find omoros)/launch/gmapping.launch" />
+
+  <!-- Launch hector mapping
   <include file="$(find omoros)/launch/hector_mapping.launch" />
+   -->
 
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
