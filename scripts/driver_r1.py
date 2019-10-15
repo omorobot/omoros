@@ -142,7 +142,7 @@ class Robot:
          self.config.WIDTH = 0.591        # Apply vehicle width for R1 version
          self.config.WHEEL_R = 0.11       # Apply wheel radius for R1 version
          self.config.WHEEL_MAXV = 1200.0  # Maximum speed can be applied to each wheel (mm/s)
-         self.config.V_Limit = 1.0        # Limited speed (m/s)
+         self.config.V_Limit = 0.6        # Limited speed (m/s)
          self.config.W_Limit = 0.1
          self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
          self.config.W_Limit_JOY = 0.05
@@ -279,6 +279,7 @@ class Robot:
             
    def callbackJoy(self, data):
       self.joyAxes = deepcopy(data.axes)
+      #print('Joy:{:.2f},{:.2f}'.format(self.joyAxes[0], self.joyAxes[1]))
       # Read the most recent button state
       newJoyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
       newJoyButtons = deepcopy(data.buttons)
