@@ -2,7 +2,7 @@
 <robot name="omorobot_r1" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find omoros)/r1_description/urdf/common_properties.xacro"/>
   <xacro:include filename="$(find omoros)/r1_description/urdf/r1.gazebo.xacro"/>
-
+<!--
   <link name="base_footprint"/>
 
   <joint name="base_joint" type="fixed">
@@ -10,6 +10,7 @@
     <child link="base_link" />
     <origin xyz="0 0.0 0.050" rpy="0 0 0.0"/>
   </joint>
+-->
 
   <link name="base_link">
     <visual>
@@ -145,7 +146,7 @@
                izz="0.001" />
     </inertial>
   </link>
-
+<!--
   <joint name="imu_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
@@ -153,7 +154,7 @@
   </joint>
 
   <link name="imu_link"/>
-
+-->
   <joint name="scan_joint" type="fixed">
     <parent link="base_link"/>
     <child link="base_scan"/>
@@ -184,7 +185,7 @@
                izz="0.001" />
     </inertial>
   </link>
-
+<!--
   <joint name="camera_joint" type="fixed">
     <origin xyz="0.073 -0.011 0.084" rpy="0 0 0"/>
     <parent link="base_link"/>
@@ -199,6 +200,6 @@
       </geometry>
     </collision>
   </link>
-
+-->
 
 </robot>

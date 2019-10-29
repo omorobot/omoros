@@ -2,6 +2,7 @@
 
 This project contains ROS support driver and navigation packages for OMOROBOT's research platform R-1 and R-1 mini.
 This packages allows users not only run the robot but also start mapping and autonomous navigation when equipped with 2-D lidar such as ydlidar sensor.
+(Latest version tested with ROS-melodic installation)
 
 <div align="center">
   <img src="images/omoros_nav.png">
@@ -259,32 +260,17 @@ Go to startup in the package and run initenv.sh to assign port name of the usb-t
 
 For detailed installation, please refer to https://github.com/EAIBOT/ydlidar
 
-### Install Hector SLAM Package
+### Install ROS packages for SLAM and navigation
 
 use apt command to install necessary packages. (Per ROS-Melodic)
 ```
-$ sudo apt-get install libsdl-image1.2-dev
-
-$ sudo apt install ros-melodic-amcl
-
-$ sudo apt install ros-melodic-navigation
+$ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 
 ```
-Install build relate libraries
-```
-$ sudo apt install libqt4-dev
-```
-Go to source folder under catkin_ws and download hector slam package from git with branch melodic-devel.
-```
-$ git clone https://github.com/tu-darmstadt-ros-pkg/hector_slam.git
-$ cd hector_slam
-$ git checkout melodic-devel
-```
-Use catkin_make to build the code.
 
 ### 4.2 Launch omoros navigation
 
-Once build is completed, use roslaunch to run omoros navigation launch file.
+Once installation is completed, use roslaunch to run omoros navigation launch file.
 ```
 $ roslaunch omoros omoros_navigation.launch 
 ```

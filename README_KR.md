@@ -3,6 +3,8 @@
 오모로봇 제품군의 ROS 지원 드라이버 및 네비게이션 패키지 입니다.
 이 드라이버를 사용하여 자율주행, 원격 주행에 필요한 엔코더, Odometry정보를 가져오고 주행 명령을 내릴 수 있습니다.
 또한 ydlidar등의 거리 측정 센서를 추가하여 SLAM, Mapping을 통해 자율주행을 시작할 수 있습니다.
+ROS에서 구현된 SLAM 기능을 활용하기 위해 gmapping 등의 패키지가 필요합니다.
+(ROS-Melodic에서 테스트 됨)
 
 <div align="center">
   <img src="images/omoros_nav.png">
@@ -19,15 +21,22 @@
 ### 1.1 ROS on Ubuntu Linux
 
 ROS패키지들이 설치되어있는 ros_catkin_ws/src 에서 git clone하여 소스를 복사하면 됩니다.
-(ROS-Kinetic 혹은 ROS-Melodic에서 테스트 됨)
+ROS gmapping navigation 
 
 ```
 $ cd to catkin_ws/src
 $ git clone https://github.com/omorobot/omoros.git
-$ cd to catkin_ws
+```
+gmapping 버전으로 checkout 합니다.
+```
+$ cd omoros
+$ git checkout gmapping
+```
+이제 catkin_make 하여 패키지를 설치합니다.
+```
+$ cd ~/catkin_ws
 $ catkin_make
 ```
-
 ### 1.2 ROS-Kinetic on Raspbian 
 
 로봇을 라즈베리파이에 연결하여 구동하는 경우 아래 설치 과정을 따라 설치 후 진행하시기 바랍니다.
@@ -257,32 +266,18 @@ startup 폴더로 이동하여 initenv.sh 스크립트를 실행하여 usb 장�
 
 자세한 설치 방법은 https://github.com/EAIBOT/ydlidar 를 참조하시기 바랍니다.
 
-### Install Hector SLAM Package
+### Install ROS Packages for SLAM
 
 apt 명령어로 다음과 같은 패키지들을 설치합니다.(ROS-Melodic 기준)
-```
-$ sudo apt-get install libsdl-image1.2-dev
-
-$ sudo apt install ros-melodic-amcl
-
-$ sudo apt install ros-melodic-navigation
 
 ```
-빌드 관련 라이브러리 설치
+$ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 ```
-$ sudo apt install libqt4-dev
-```
-다시 catkin_ws의 src 폴더로 이동하여 hector slam 코드를 다운로드하고 melodic-devel 브렌치로 checkout 합니다.
-```
-$ git clone https://github.com/tu-darmstadt-ros-pkg/hector_slam.git
-$ cd hector_slam
-$ git checkout melodic-devel
-```
-이제 catkin_make 명령으로 코드를 빌드합니다.
+
 
 ### 4.2 Launch omoros navigation
 
-빌드가 완료되면 roslaunch 명령으로 네비게이션 패키지를 실행할 수 있습니다.
+설치가 완료되면 roslaunch 명령으로 네비게이션 패키지를 실행할 수 있습니다.
 ```
 $ roslaunch omoros omoros_navigation.launch 
 ```

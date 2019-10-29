@@ -49,7 +49,7 @@
     <maxVel>1.0</maxVel>
     <material>Gazebo/FlatBlack</material>
   </gazebo>
-
+<!--
   <gazebo reference="imu_link">
     <sensor type="imu" name="imu">
       <always_on>true</always_on>
@@ -57,7 +57,7 @@
     </sensor>
     <material>Gazebo/Grey</material>
   </gazebo>
-
+-->
   <!--<gazebo>
     <plugin name="turtlebot3_waffle_pi_controller" filename="libgazebo_ros_diff_drive.so">
       <commandTopic>cmd_vel</commandTopic>
@@ -81,6 +81,7 @@
     </plugin>
   </gazebo>
 -->
+<!--
   <gazebo>
     <plugin name="imu_plugin" filename="libgazebo_ros_imu.so">
       <alwaysOn>true</alwaysOn>
@@ -109,7 +110,7 @@
       </imu>
     </plugin>
   </gazebo>
-
+-->
   <gazebo reference="base_scan">
     <material>Gazebo/FlatBlack</material>
     <sensor type="ray" name="lds_lfcd_sensor">
@@ -144,6 +145,7 @@
   </gazebo>
 
 <!--link : https://www.raspberrypi.org/documentation/hardware/camera/-->
+<!--
   <gazebo reference="camera_rgb_frame">
     <sensor type="camera" name="Pi Camera">
       <always_on>true</always_on>
@@ -176,5 +178,5 @@
       </plugin>
     </sensor>
   </gazebo>
-
+-->
 </robot>
