@@ -4,7 +4,7 @@ This project contains ROS support driver and navigation packages for OMOROBOT's 
 This packages allows users not only run the robot but also start mapping and autonomous navigation when equipped with 2-D lidar such as ydlidar sensor.
 (Latest version tested with ROS-melodic installation)
 
-**For Korean language** see this [document](README_KR.md)
+**한국어**[문서](README_KR.md)
 
 <div align="center">
   <img src="images/omoros_nav.png">
