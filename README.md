@@ -13,9 +13,9 @@ This packages allows users not only run the robot but also start mapping and aut
 Currently supporting models: 
 
 [R1](https://www.omorobot.com/omo-r1)
-
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
+# Index
 - [1. Installations](##1-installations)
 - [2. How to use](##2-how-to-use)
 - [3. Trouble shooting](##3-trouble-shooting)

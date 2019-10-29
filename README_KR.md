@@ -13,7 +13,6 @@ ROS에서 구현된 SLAM 기능을 활용하기 위해 gmapping 등의 패키지
 지원 모델: 
 
 [R1](https://www.omorobot.com/omo-r1)
-
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
 - [1. 설치하기](##1-설치하기)
