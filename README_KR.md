@@ -16,9 +16,14 @@ ROS에서 구현된 SLAM 기능을 활용하기 위해 gmapping 등의 패키지
 
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
-## 1. 설치방법
+- [1. 설치방법](#1. 설치방법)
+- [2. How to use](# 2. How to use)
+- [3. Trouble Shooting](# 3. Trouble shooting)
+- [4. SLAM Mapping & Navigation](# 4. SLAM Mapping & Navigation)
 
-### 1.1 ROS on Ubuntu Linux
+# 1. 설치방법
+
+## 1.1 ROS on Ubuntu Linux
 
 ROS패키지들이 설치되어있는 ros_catkin_ws/src 에서 git clone하여 소스를 복사하면 됩니다.
 ROS gmapping navigation 
@@ -37,7 +42,7 @@ $ git checkout gmapping
 $ cd ~/catkin_ws
 $ catkin_make
 ```
-### 1.2 ROS-Kinetic on Raspbian 
+## 1.2 ROS-Kinetic on Raspbian 
 
 로봇을 라즈베리파이에 연결하여 구동하는 경우 아래 설치 과정을 따라 설치 후 진행하시기 바랍니다.
 tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 것을 권장합니다.
@@ -56,7 +61,7 @@ tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 
 <img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
 </div>
 
-### 1.3 Dependency
+## 1.3 Dependency
 
 드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
 
@@ -72,7 +77,7 @@ Joy: [ROS JOY](http://wiki.ros.org/joy)
 
 tf: [ROS TF](http://wiki.ros.org/tf)
 
-### 1.4 Serial Port 설정
+## 1.4 Serial Port 설정
 
 USB to Serial 포트를 연결하고 시리얼포트의 경로를 확인합니다. 보통 /dev/ttyUSB# 등으로 설정되어있습니다.
 
@@ -98,9 +103,9 @@ to /dev/ttyMotor for omoros driver.
 Reload rules
 ```
 
-## 2. How to use
+# 2. How to use
 
-### 2.1 Launching omoros_core
+## 2.1 Launching omoros_core
 
 launch 폴더에는 omoros 실행을 위한 launch 파일들이 존재합니다.
 
@@ -133,7 +138,7 @@ $ roslaunch omoros omoros_core.launch
 </div>
 
 
-### 2.2 조작 방법
+## 2.2 조작 방법
 
 로봇의 조작 방법은 아래 그림을 참조하시기 바랍니다.
 
@@ -147,7 +152,7 @@ $ roslaunch omoros omoros_core.launch
  
 조이스틱 조작에서 에러가 발생하는 경우 [다음](#joystick)을 참조 바랍니다.
 
-### 2.3 Messages
+## 2.3 Messages
 이 드라이버는 다음과 같은 메세지들을 Publish 혹은 Subscribe 합니다.
 ```
 $ rostopic list
@@ -191,9 +196,9 @@ R1Command 메세지는 삭제되고 cmd_vel 명령으로 대체되었습니다.
   <img src="images/topic_odom.png">
 </div>
 
-## 3. Trouble shooting
+# 3. Trouble shooting
 
-### 3.1 <a name="serial"> Serial Port Error </a>
+## 3.1 <a name="serial"> Serial Port Error </a>
 * 퍼미션 오류: Add user dialout
 
 아래와 같은 메세지가 뜨면서 시리얼 포트를 열 수 없는 경우
@@ -221,7 +226,7 @@ Raspberry PI의 내장 시리얼포트를 사용하기 위해서는 경로를 �
 
 '/dev/ttyS0'
 
-### 3.2 <a name="joystick"> Joystick index Error </a>
+## 3.2 <a name="joystick"> Joystick index Error </a>
 
 조이스틱의 특정 버튼을 눌렀을때 에러가 발생할 수 있습니다.
 이것은 조이스틱에 따라 axes와 buttons에 할당된 index 번호가 다르기 때문입니다.
@@ -241,12 +246,12 @@ buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ---
 ```
 
-## 4 SLAM Mapping & Navigation
+# 4. SLAM Mapping & Navigation
 
 R-1 로봇에 YDLidar와 같은 2D 라이다 센서를 장착하면 SLAM 기술을 적용하여 맵을 생성하고 항법에 적용할 수 있습니다.
 OMOROS는 omoros_navigation.launch 파일을 구동하여 ROS의 SLAM 패키지를 활용한 매핑과 네비게이션을 테스트할 수 있는 환경을 제공합니다.
 
-### 4.1 Requirements
+## 4.1 Requirements
 
  - YDLidar 는 https://smartstore.naver.com/omorobot/products/4445001397 에서 구매할 수 있습니다.
  - ROS는 Desktop-Full 로 설치되어야 합니다. 
@@ -275,7 +280,7 @@ $ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 ```
 
 
-### 4.2 Launch omoros navigation
+## 4.2 Launch omoros navigation
 
 설치가 완료되면 roslaunch 명령으로 네비게이션 패키지를 실행할 수 있습니다.
 ```
