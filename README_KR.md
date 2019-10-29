@@ -16,10 +16,10 @@ ROS에서 구현된 SLAM 기능을 활용하기 위해 gmapping 등의 패키지
 
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
-- [1. 설치방법](#1. 설치방법)
-- [2. How to use](# 2. How to use)
-- [3. Trouble Shooting](# 3. Trouble shooting)
-- [4. SLAM Mapping & Navigation](# 4. SLAM Mapping & Navigation)
+- [1. 설치방법](#1-설치방법)
+- [2. How to use](#2-how-to-use)
+- [3. Trouble Shooting](#3-trouble-shooting)
+- [4. SLAM Mapping & Navigation](#4-slam-mapping-&-navigation)
 
 # 1. 설치방법
 
