@@ -14,9 +14,14 @@ Currently supporting models:
 
 [R1-mini](https://www.omorobot.com/omo-r1-mini)
 
-## 1. Installations
+-[# 1. Installations](#1-installations)
+-[# 2. How to use](#2-how-to-use)
+-[# 3. Trouble shooting](#3-trouble-shooting)
+-[# 4 SLAM Mapping & Navigation](#4-slam-mapping-&&-navigation)
 
-### 1.1 ROS on Ubuntu Linux
+# 1. Installations
+
+## 1.1 ROS on Ubuntu Linux
 
 git clone this package into the source folder of your ROS catkin workspace i.e, under ros_catkin_ws/src.
 (This package is also tested under ROS-Kinetic or ROS-Melodic)
@@ -28,7 +33,7 @@ $ cd to catkin_ws
 $ catkin_make
 ```
 
-### 1.2 ROS-Kinetic on Raspbian 
+## 1.2 ROS-Kinetic on Raspbian 
 
 If you are using Raspberry pie (pie), follow instructions below.
 In order to use libraries such as tf2, it is recommended to install with Desktop version of ROS.
@@ -39,7 +44,6 @@ In order to use libraries such as tf2, it is recommended to install with Desktop
 
 If you are un familiar with installing in pie machine and avoid hassles installing all the packages, you can also download the entire image of the system from below link.
 
-
 [Raspian stretch image with ROS-kinetic installed](https://drive.google.com/open?id=1jAGlkIUAB_SLq0WCe1G4SktzwUm7abHW)
 
 When first boot from burned image file, use raspi-config and expand file system to the size of the SD memory card.
@@ -48,7 +52,7 @@ When first boot from burned image file, use raspi-config and expand file system 
 <img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
 </div>
 
-### 1.3 Dependency
+## 1.3 Dependency
 
 Following packages may require to run the driver.
 Refer to below links for specific intallations.
@@ -63,7 +67,7 @@ Joy: [ROS JOY](http://wiki.ros.org/joy)
 
 tf: [ROS TF](http://wiki.ros.org/tf)
 
-### 1.4 Serial Port Configuations
+## 1.4 Serial Port Configuations
 
 Attach the USB to Serial port into the PC and check the path of the port. 
 Normally these paths are set as /dev/ttyUSB# however, the numbers are regularly changed by order of connections and not fixed.
@@ -90,9 +94,9 @@ to /dev/ttyMotor for omoros driver.
 Reload rules
 ```
 
-## 2. How to use
+# 2. How to use
 
-### 2.1 Launching omoros_core
+## 2.1 Launching omoros_core
 
 In the launch folder, there are some files to run omoros driver or navigation packages.
 
@@ -126,7 +130,7 @@ Run rosrun rviz rviz to see if the robot moves according to your command.
 </div>
 
 
-### 2.2 Controlling the robot
+## 2.2 Controlling the robot
 
 Below image describes how you can operate the robot using joystick command.
 
@@ -140,7 +144,7 @@ Below image describes how you can operate the robot using joystick command.
  
 If there is error controlling with joystick, please see [next](#joystick).
 
-### 2.3 Messages
+## 2.3 Messages
 
 This driver will publish or subscribe below messages.
 
@@ -185,9 +189,9 @@ $ rostopic list
   <img src="images/topic_odom.png">
 </div>
 
-## 3. Trouble shooting
+# 3. Trouble shooting
 
-### 3.1 <a name="serial"> Serial Port Error </a>
+## 3.1 <a name="serial"> Serial Port Error </a>
 * Permission error: Add user dialout
 
 If you see messages like below and cannot open the port.
@@ -216,7 +220,7 @@ In order to use Raspberry Pie's insternal serial port, change the port name as b
 
 '/dev/ttyS0'
 
-### 3.2 <a name="joystick"> Joystick index Error </a>
+## 3.2 <a name="joystick"> Joystick index Error </a>
 
 Depending on the type of joysticks, it may cause some errors and is due from different index numbers assigned to each buttons or axis.
 
@@ -235,18 +239,18 @@ buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ---
 ```
 
-## 4 SLAM Mapping & Navigation
+# 4 SLAM Mapping & Navigation
 
 With the help of 2D lidar sensor such as YDLidar, the Robot can generate maps and start navigate autonomously by applying SLAM technologies already implemented in ROS.
 You can test run SLAM and navigation by running omoros_navigation.launch file as below.
 
-### 4.1 Requirements
+## 4.1 Requirements
 
  - YDLidar can be purchased from https://www.amazon.com/SmartFly-info-LIDAR-053-YDLIDAR-Frequency/dp/B07DBYHJVQ/ref=sr_1_1?keywords=ydlidar&qid=1568906093&sr=8-1 or https://smartstore.naver.com/omorobot/products/4445001397
  - ROS must be installed with Desktop-Full 
  - Below packages maybe required to run omoros_navigation.launch
 
-### Install YDLidar
+## Install YDLidar
 
 Go to src folder uner catkin_ws and download packages as below.
 ```
@@ -260,7 +264,7 @@ Go to startup in the package and run initenv.sh to assign port name of the usb-t
 
 For detailed installation, please refer to https://github.com/EAIBOT/ydlidar
 
-### Install ROS packages for SLAM and navigation
+## Install ROS packages for SLAM and navigation
 
 use apt command to install necessary packages. (Per ROS-Melodic)
 ```
@@ -268,7 +272,7 @@ $ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 
 ```
 
-### 4.2 Launch omoros navigation
+## 4.2 Launch omoros navigation
 
 Once installation is completed, use roslaunch to run omoros navigation launch file.
 ```
