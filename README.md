@@ -16,10 +16,10 @@ Currently supporting models:
 - [OMO-R1-mini](https://www.omorobot.com/omo-r1-mini)
 
 # Index
-- [1. Installations](##1-installations)
-- [2. How to use](##2-how-to-use)
-- [3. Trouble shooting](##3-trouble-shooting)
-- [4. SLAM Mapping & Navigation](##4-slam-mapping--navigation)
+- [1. Installations](#1-installations)
+- [2. How to use](#2-how-to-use)
+- [3. Trouble shooting](#3-trouble-shooting)
+- [4. SLAM Mapping & Navigation](#4-slam-mapping--navigation)
 
 ## 1. Installations
 
