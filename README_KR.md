@@ -106,18 +106,21 @@ Reload rules
 
 launch 폴더에는 omoros 실행을 위한 launch 파일들이 존재합니다.
 
-조이스틱을 통한 원격 조작을 시험하기 위해서는 omoros_core.launch 파일만 실행하면 됩니다.
+조이스틱을 통한 원격 조작을 시험하기 위해서는 omoros_core.launch 파일을 실행하면 됩니다.
 
-먼저 omoros_core.launch 파일을 열어 다음 항목을 찾아봅니다.
+터미널에 다음과 같이 입력하여 실행할 수 있습니다.
 
 ```
-<node pkg="omoros" type="driver_r1.py" name="omoros" output="screen">
-   <param name="port" value="/dev/ttyMotor"/>
-   <param name="baud" value="115200"/>
-   <param name="modelName" value="r1"/>
-</node>
+$ roslaunch omoroslaunch omoros omoros_core.launch <param>
 ```
-R1 및 R1-mini 버전에 따라 modelName을 r1 혹은 mini로 지정합니다. 
+
+<param> 항목에는 다음과 같은 파라미터를 입력할 수 있습니다.
+
+- set_model:= 모델 이름 (기본 값은 "r1" 입니다. R1-mini모델을 실행하기 위해서는 set_model:=mini 라고 추가합니다.)
+
+- set_port:= 시리얼 포트의 경로 (기본 값은 "/dev/ttyMotor" 입니다)
+
+또는 omoros_core.launch 파일을 열어서 <node pkg="omoros" 항목을 찾아서 내용을 직접 변경하면 됩니다.
 
 **주의** 실행 전에 PC의 Serial port와 로봇의 연결상태를 확인하세요.
 

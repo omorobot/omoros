@@ -102,18 +102,18 @@ Reload rules
 
 In the launch folder, there are some files to run omoros driver or navigation packages.
 
-To test drive the robot with Joystick, simply run omoros_core.launch in the terminal.
-
-First check omoros_core.launch file and change some values per robots.
+To test drive the robot with Joystick, simply run omoros_core.launch in the terminal as below.
 
 ```
-<node pkg="omoros" type="driver_r1.py" name="omoros" output="screen">
-   <param name="port" value="/dev/ttyMotor"/>
-   <param name="baud" value="115200"/>
-   <param name="modelName" value="r1"/>
-</node>
+$ roslaunch omoroslaunch omoros omoros_core.launch <param>
 ```
-Change modelName to r1 or mini to run R-1 or R-1 mini respectively.
+
+You can input different parameters in <param> as below
+ 
+- set_model:= Model name (default is "r1". To change model to R1-mini change set_model:=mini)
+- set_port:= Path to the serial port (default is "/dev/ttyMotor")
+ 
+If you want to change values in the code, open omoros_core.launch file under /launch folder and find <node pkg="omoros"
 
 **Notice** Make sure your serial to USB device is working corrently.
 

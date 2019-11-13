@@ -152,7 +152,7 @@ class Robot:
          self.config.encoder.PPR = 1000
          self.config.encoder.GearRatio = 15
          
-      elif arg == "mini":
+      elif self.param_modelName == "mini":
          print "***************"
          print "Driving R1-mini"
          print "***************"
