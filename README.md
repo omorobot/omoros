@@ -44,9 +44,14 @@ In order to use libraries such as tf2, it is recommended to install with Desktop
 
 ** Install from the image already installed the entire packages **
 
-If you are un familiar with installing in pie machine and avoid hassles installing all the packages, you can also download the entire image of the system from below link.
+If you are not familiar with installation process or avoid hassles installing all the packages, 
+you can also download the entire image of the system from below link and burn your microSD using your favorite burning software such as etcher.
 
+For raspbian stretch + ROS-kinetic
 [Raspian stretch image with ROS-kinetic installed](https://drive.google.com/open?id=1jAGlkIUAB_SLq0WCe1G4SktzwUm7abHW)
+
+For raspbian buster + ROS-melodic
+[Raspian buter image with ROS-melodic installed](https://drive.google.com/open?id=1D_h7qv17UP1tMLZL60qzBl1sEwGxm00D)
 
 When first boot from burned image file, use raspi-config and expand file system to the size of the SD memory card.
 

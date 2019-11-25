@@ -5,6 +5,7 @@
    <arg name="core_run_rviz" default="1"/>
    <arg name="set_model" default="r1"/>
    <arg name="set_port" default="/dev/ttyMotor"/>
+   <arg name="set_joy_en" default="1"/>
    <include file="$(find omoros)/launch/includes/description.launch.xml">
    </include>
    
@@ -14,6 +15,7 @@
          <param name="port" value="/dev/ttyS0"/>
          <param name="baud" value="115200"/>
          <param name="modelName" value="$(arg set_model)"/>
+         <param name="joy_enable" value="0"/>
       </node>
    </group>
    <group if="$(eval arg('set_model')=='r1')">
@@ -21,6 +23,7 @@
          <param name="port" value="$(arg set_port)"/>
          <param name="baud" value="115200"/>
          <param name="modelName" value="$(arg set_model)"/>
+         <param name="joy_enable" value="$(arg set_joy_en)"/>
       </node>
    </group>
 

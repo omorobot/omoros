@@ -46,11 +46,15 @@ tf2 등의 라이브러리가 필요하므로 Desktop 버전으로 설치하는 
 
 [Installing ROS Kinetic on the Raspberry Pi](http://wiki.ros.org/ROSberryPi/Installing%20ROS%20Kinetic%20on%20the%20Raspberry%20Pi)
 
-** 이미지 파일로부터 Raspberry Pi 3 적용**
+** Raspberry Pi용 이미지로부터 굽기**
 
-위 설치과정이 번거롭다면 Raspberry Pi 3를 위해 만들어진 전체 이미지를 다운로드 하고 etcher와 같은 이미지 쓰기 도구로 microSD에 구워서 사용하여 설치합니다.
+위 설치과정이 번거롭다면 아래 링크로부터 전체 이미지를 다운로드 하고 etcher와 같은 이미지 쓰기 도구로 microSD에 구워서 사용하여 설치합니다.
 
+라즈베리파이 3용 Raspbian stretch + ROS-kinetic
 [Raspian stretch image with ROS-kinetic installed](https://drive.google.com/open?id=1jAGlkIUAB_SLq0WCe1G4SktzwUm7abHW)
+
+라즈베리파이 4용 Raspbian buster + ROS-melodic
+[Raspian buter image with ROS-melodic installed](https://drive.google.com/open?id=1D_h7qv17UP1tMLZL60qzBl1sEwGxm00D)
 
 처음 microSD로 부팅한 후에는 터미널에서 raspi-config 를 실행하여 파일시스템을 SD카드 전체로 확장합니다.
 

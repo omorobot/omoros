@@ -70,6 +70,7 @@ class Encoder(object):
    PPR = 0
    GearRatio = 0
    Step = 0
+   PPWheelRev = 0
    
 class VehicleConfig(object):
    BodyCircumference = 0   # circumference length of robot for spin in place
@@ -99,7 +100,9 @@ class Robot:
    param_port = rospy.get_param('~port')
    param_baud = rospy.get_param('~baud')
    param_modelName = rospy.get_param('~modelName')
-   
+   param_joy_en = rospy.get_param('~joy_enable')
+   print('PARAM JOY_ENABLE:')
+   print(param_joy_en)
    # Open Serial port with parameter settings
    ser = serial.Serial(param_port, param_baud)
    #ser = serial.Serial('/dev/ttyS0', 115200) #For raspberryPi
@@ -112,7 +115,12 @@ class Robot:
    joyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]    # Buttons 15
    joyDeadband = 0.15
    exp = 0.3            # Joystick expo setting
-   isAutoMode = False
+   if param_joy_en == 1:
+      isAutoMode = False
+      print "In Manual mode"
+   else :
+      isAutoMode = True
+      print "In Auto mode"
    isArrowMode = False  # Whether to control robo with arrow key or not
    arrowCon = ArrowCon
    
@@ -165,21 +173,22 @@ class Robot:
          self.config.W_Limit_JOY = 0.1
          self.config.ArrowFwdStep = 100
          self.config.ArrowRotRate = 0.1
-         self.config.encoder.Dir = -1.0
-         self.config.encoder.PPR = 234
+         self.config.encoder.Dir = 1.0
+         self.config.encoder.PPR = 11
          self.config.encoder.GearRatio = 21         
       else :
          print "Error: param:modelName, Only support r1 and mini. exit..."
          exit()
-      print('Wheel Track:{:.2f}m, Radius:{:.2f}m'.format(self.config.WIDTH, self.config.WHEEL_R))
+      print('Wheel Track:{:.2f}m, Radius:{:.3f}m'.format(self.config.WIDTH, self.config.WHEEL_R))
       self.config.BodyCircumference = self.config.WIDTH * math.pi
       print('Platform Rotation arc length: {:04f}m'.format(self.config.BodyCircumference))
       self.config.WheelCircumference = self.config.WHEEL_R * 2 * math.pi
       print('Wheel circumference: {:04f}m'.format(self.config.WheelCircumference))
       self.config.encoder.Step = self.config.WheelCircumference / (self.config.encoder.PPR * self.config.encoder.GearRatio * 4)
       print('Encoder step: {:04f}m/pulse'.format(self.config.encoder.Step))
-      
-      print(self.ser.name)         # Print which port was really used
+      self.config.encoder.PPWheelRev = self.config.WheelCircumference / self.config.encoder.Step
+      print('Encoder pulses per wheel rev: {:.2f} pulses/rev'.format(self.config.encoder.PPWheelRev))
+      print('Serial port:'+self.ser.name)         # Print which port was really used
       self.joyAxes = [0,0,0,0,0,0,0,0]
       self.joyButtons = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
       # Configure data output
