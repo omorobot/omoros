@@ -1,0 +1,5 @@
+<launch>
+  <arg name="model"/>
+  <arg name="urdf_file" default="$(find xacro)/xacro --inorder '$(find omoros)/r1mini_description/urdf/r1mini.urdf.xacro' meshDirectory:=$(find omoros)/r1mini_description/meshes/" />
+  <param name="robot_description" command="$(arg urdf_file)" />
+</launch>

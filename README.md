@@ -15,6 +15,10 @@ Currently supporting models:
 - [OMO-R1](https://www.omorobot.com/omo-r1)
 - [OMO-R1-mini](https://www.omorobot.com/omo-r1-mini)
 
+<div align="center">
+  <img src="images/r1mini_rviz.png">
+</div>
+
 # Index
 - [1. Installations](#1-installations)
 - [2. How to use](#2-how-to-use)
@@ -53,7 +57,7 @@ For raspbian stretch + ROS-kinetic
 For raspbian buster + ROS-melodic
 [Raspian buter image with ROS-melodic installed](https://drive.google.com/open?id=1D_h7qv17UP1tMLZL60qzBl1sEwGxm00D)
 
-When first boot from burned image file, use raspi-config and expand file system to the size of the SD memory card.
+When first boot from the newly burned sd-card, run raspi-config and expand file system to the size of the SD memory card.
 
 <div align="center">
 <img src="https://geek-university.com/wp-content/images/raspberry-pi/expand_filesystem_raspbian.jpg?x66712">
