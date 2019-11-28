@@ -167,10 +167,10 @@ class Robot:
          self.config.WIDTH = 0.170      # Apply vehicle width for mini version
          self.config.WHEEL_R = 0.0336     # Apply wheel radius for mini version
          self.config.WHEEL_MAXV = 500.0
-         self.config.V_Limit = 0.5
-         self.config.W_Limit = 0.2
-         self.config.V_Limit_JOY = 0.5
-         self.config.W_Limit_JOY = 0.1
+         self.config.V_Limit = 0.2
+         self.config.W_Limit = 0.1
+         self.config.V_Limit_JOY = 0.2
+         self.config.W_Limit_JOY = 0.05
          self.config.ArrowFwdStep = 100
          self.config.ArrowRotRate = 0.1
          self.config.encoder.Dir = 1.0
