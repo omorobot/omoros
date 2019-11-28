@@ -15,10 +15,6 @@ Currently supporting models:
 - [OMO-R1](https://www.omorobot.com/omo-r1)
 - [OMO-R1-mini](https://www.omorobot.com/omo-r1-mini)
 
-<div align="center">
-  <img src="images/r1mini_rviz.png">
-</div>
-
 # Index
 - [1. Installations](#1-installations)
 - [2. How to use](#2-how-to-use)
@@ -81,16 +77,16 @@ tf: [ROS TF](http://wiki.ros.org/tf)
 ### 1.4 Serial Port Configuations
 
 Attach the USB to Serial port into the PC and check the path of the port. 
-Normally these paths are set as /dev/ttyUSB# however, the numbers are regularly changed by order of connections and not fixed.
+Normally these paths are set as /dev/ttyUSB# however, if there are multiple of USB ports are connected, the numbers are regularly changed by order of connections and not fixed.
 
-You will need to modify contents of /etc/udev/rules.d to fix the path of the port.
+To fix the path of the port, the contents of /etc/udev/rules.d need to be modified.
 
-Use lsusb command to identify idVendor and idProduct your USB-Serial port.
+First, run lsusb command to identify idVendor and idProduct of the USB-Serial port.
 ```
 $ lsusb
 Bus 001 Device 029: ID 0403:6001 Future Technology Devices International, Ltd FT232 USB-Serial (UART) IC
 ```
-Check numbers followed by ID and the former one ("0403" part) is idVendor while the latter"6001" represents idProduct.
+Check numbers followed by ID and the former one ("0403" part) is idVendor while the latter "6001" represents idProduct.  
 Go to bringup folder and open "99-omoros.rules" with your favorite text editor and modify numbers accordingly.
 ```
 SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE:="0666", GROUP:="dialout", SYMLINK+="ttyMotor"
@@ -101,28 +97,43 @@ $ ./create_udev_rules
 This script copies a udev rule to /etc/udev/rules.d/ to fix serial port path 
 to /dev/ttyMotor for omoros driver.
 
-
 Reload rules
 ```
 
 ## 2. How to use
 
-### 2.1 Launching omoros_core
+### 2.1 Launching the driver
 
 In the launch folder, there are some files to run omoros driver or navigation packages.
 
-To test drive the robot with Joystick, simply run omoros_core.launch in the terminal as below.
+To test drive the robot with Joystick, depending on which robot you are working with, simply drive_r1.launch or drive_r1mini.launch in the terminal as below.
+
+#### To drive R1
+
+To drive R1 robot, open a terminal and enter below command.
 
 ```
-$ roslaunch omoroslaunch omoros omoros_core.launch <param>
+$ roslaunch omoros drive_r1.launch <param>
 ```
 
 You can input different parameters in <param> as below
  
-- set_model:= Model name (default is "r1". To change model to R1-mini change set_model:=mini)
 - set_port:= Path to the serial port (default is "/dev/ttyMotor")
+- set_run_rviz:= whether to run rviz (default is "0". Change to "1" to visualize the robot in rviz.)
+- set_joy_en:= whether to enable joystick input(default is "1" Change to "0" to drive the robot with ROS Topic:cmd_vel message.)
  
-If you want to change values in the code, open omoros_core.launch file under /launch folder and find <node pkg="omoros"
+#### To drive R1-mini
+
+To drive R1-mini robot, open a terminal and enter below command.
+
+```
+$ roslaunch omoros drive_r1mini.launch <param>
+```
+
+You can input **additional** parameters in <param> as below
+ 
+- set_remote:= To launch in remote mode (default is "1". Change to "0" to only run in local machine)
+
 
 **Notice** Make sure your serial to USB device is working corrently.
 
@@ -140,8 +151,44 @@ Run rosrun rviz rviz to see if the robot moves according to your command.
   <img src="images/omoros_rviz.png">
 </div>
 
+### 2.2 Drive the robot from remote PC
 
-### 2.2 Controlling the robot
+In case of R1-mini robot, there is no room for monitors and keyboard and simply not practical to run all packages with limited resources.  ROS allows user can run nodes in different system as if they are in the same console by setting ROS_MASTER.  
+
+#### ROS network configuration of host PC (host)
+
+ - Check IP address of host pc.
+ - Make sure the same version of ROS as in the Robot PC is installed in the Host PC.
+
+Open up a terminal and enter below command
+```
+export ROS_MASTER_URI=http://<IP Adress of Host PC>:11311
+export ROS_IP=<IP Adress of Host PC>
+```
+Launch host_r1mini_view.launch
+```
+roslaunch omoros host_r1mini_view.launch
+```
+
+#### ROS network configuration of embedded PC(target)
+
+ - Check if the target is connected to the router
+ - Check IP address of target
+ - Check if the target is accessible via ssh
+
+Open a separate terminal in the host and try to connect to target via ssh.
+If connected to the target, enter below.
+```
+export ROS_MASTER_URI=http://<IP Adress of Host PC>:11311
+export ROS_IP=<IP Adress of Target>
+```
+Launch drive_r1mini.launch
+```
+$ roslaunch omoros drive_r1mini.launch
+```
+
+
+### 2.3 Controlling the robot
 
 Below image describes how you can operate the robot using joystick command.
 
@@ -155,7 +202,7 @@ Below image describes how you can operate the robot using joystick command.
  
 If there is error controlling with joystick, please see [next](#joystick).
 
-### 2.3 Messages
+### 2.4 ROS Topics
 
 This driver will publish or subscribe below messages.
 
@@ -235,7 +282,7 @@ In order to use Raspberry Pie's insternal serial port, change the port name as b
 
 Depending on the type of joysticks, it may cause some errors and is due from different index numbers assigned to each buttons or axis.
 
-Use "rostopic echo joy" command to check index numbers of each axes and buttons assigned to pyisical joystick.
+Run **rostopic echo joy** command to check index numbers of each axes and buttons assigned to pyisical joystick.
 If the numbers are different from what you see in the topic, change the numbers in self.joyAxes[#] or self.joyButtons[#] accordingly.
 ```
 ---
@@ -252,6 +299,7 @@ buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 ## 4 SLAM Mapping & Navigation
 
+Please note this feature is only tested with R1.  
 With the help of 2D lidar sensor such as YDLidar, the Robot can generate maps and start navigate autonomously by applying SLAM technologies already implemented in ROS.
 You can test run SLAM and navigation by running omoros_navigation.launch file as below.
 
