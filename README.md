@@ -338,10 +338,31 @@ $ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 ### 4.2 Launch omoros navigation
 
 Once installation is completed, use roslaunch to run omoros navigation launch file.
+
+#### Launch All in onboard PC
+
+By launching omoros_navigation, all the required packages for SLAM mapping can be run at once.  
+This is recommended if the PC has enough resources for heavy computations.
 ```
 $ roslaunch omoros omoros_navigation.launch 
 ```
 
+#### Run SLAM in Host PC and only sensor and drive in robot
+
+Single board computers such as raspberry pi may not have enough compuational power to run SLAM navigation and need help of Host PC.  
+In this case only run drive and sensor nodes in the onboard pc and all other packages need to be run in host pc.  
+For setting up ROS, please refer to [2.2 Drive the robot from remote PC](#22-drive-the-robot-from-remote-pc)
+
+First run navigation package from Host PC.
+
+```
+$ roslaunch omoros host_r1mini_navigation.launch
+```
+
+Connect to the target board through ssh and launch drive_r1mini with parameter **set_ydlidar:=1** set
+```
+$ roslaunch omoros drive_r1mini.launch set_ydlidar:=1
+```
 
 Copyright (c) 2019, OMOROBOT Inc.,
 

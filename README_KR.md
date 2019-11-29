@@ -333,8 +333,27 @@ $ sudo apt install ros-melodic-amcl ros-melodic-gmapping ros-melodic-navigation
 ### 4.2 omoros navigation 실행하기
 
 설치가 완료되면 roslaunch 명령으로 네비게이션 패키지를 실행할 수 있습니다.
+#### R1을 직접 연결된 노트 PC에서 구동하는 경우
+omoros_navigation 을 실행하면 로컬 PC에서 모든 SLAM 패키지를 구동시킬 수 있습니다.  
+로컬 PC의 성능이 충분한 경우 추천됩니다.
+
 ```
 $ roslaunch omoros omoros_navigation.launch 
+```
+
+#### R1mini를 원격 HOST PC에서 구동하는 경우
+
+라즈베리파이같은 저전력 PC의 경우 컴퓨팅 성능이 부족하여 SLAM과 같이 높은 연산 능력이 필요한 프로그램을 실행하기 어려운 경우 로봇 구동과 센서에 관련된 노드만 Robot에서 실행하고 SLAM이나 네비게이션 페키지는 Host PC에서 실행하는 것이 좋습니다.  
+자세한 방법은 [2.2 원격 PC에서 실행하기](#22-원격-pc에서-실행하기)를 참조합니다.
+
+먼저 Host PC에서 Navigation 패키지를 구동합니다.
+```
+$ roslaunch omoros host_r1mini_navigation.launch
+```
+타겟에 ssh로 접속한 후 다음 명령어를 통해 로봇을 구동합니다.  
+ydlidar를 구동하기 위해 set_ydlidar:=1을 추가합니다.
+```
+$ roslaunch omoros drive_r1mini.launch set_ydlidar:=1
 ```
 
 
