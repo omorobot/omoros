@@ -61,8 +61,10 @@ When first boot from the newly burned sd-card, run raspi-config and expand file 
 
 ### 1.3 Dependency
 
-Following packages may require to run the driver.
-Refer to below links for specific intallations.
+Following packages may be required to run the driver.  
+Refer to below links for specific intallations.  
+
+[ROS JOY node](http://wiki.ros.org/joy)
 
 * run below script to install joy node.
 
@@ -70,9 +72,11 @@ Refer to below links for specific intallations.
 $ sudo apt install libusb-dev libbluetooth-dev libcwiid-dev libspnav-dev
 ```
 
-Joy: [ROS JOY](http://wiki.ros.org/joy)
+[ROS TF](http://wiki.ros.org/tf)
 
-tf: [ROS TF](http://wiki.ros.org/tf)
+If joystick is not available, you can drive the robot using keyboard with teleop_twist_keyboard package.  
+[ROS teleop_twist_keyboard](http://wiki.ros.org/teleop_twist_keyboard)
+
 
 ### 1.4 Serial Port Configuations
 

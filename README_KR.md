@@ -66,27 +66,27 @@ raspbian이 설치된 라즈베리파이에서 테스트하였습니다.
 
 ### 1.3 의존성 패키지 설치하기
 
-드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.
-
-자세한 설치 방법은 아래 링크를 참조하세요.
-
+드라이버를 구동하기 위해서는 기본적으로 다음과 같은 패키지들이 필요합니다.  
+자세한 설치 방법은 아래 링크를 참조하세요.  
 라즈베리파이와 같이 ROS를 소스에서 빌드한 시스템의 경우 해당 패키지를 catkin_ws/src/ 에 다운로드 후 catkin_make를 통해 build해야합니다.
 
-* joy node 를 설치하기 위해 다음과 같은 패키지들이 필요합니다.
+* [ROS JOY node](http://wiki.ros.org/joy)  
+ joy node 를 설치하기 위해 다음과 같은 패키지들이 필요합니다.
 
 ```
 $ sudo apt install libusb-dev libbluetooth-dev libcwiid-dev libspnav-dev
 ```
+Joystick이 없는 경우 teleop_twist_keyboard 패키지를 통해 키보드 입력으로 로봇을 구동할 수 있습니다.  
+* [ROS teleop_twist_keyboard](http://wiki.ros.org/teleop_twist_keyboard)
 
-Joy: [ROS JOY](http://wiki.ros.org/joy)
+* [ROS TF](http://wiki.ros.org/tf)
 
-tf: [ROS TF](http://wiki.ros.org/tf)
 
 ### 1.4 Serial Port 설정
 
 R1, R1mini는 시리얼 포트를 통해 제어합니다. 다음은 해당 포트를 접근하기 위한 방법을 설명합니다.
 
-먼저 USB to Serial 포트를 PC에 연결하고 시리얼포트의 경로를 확인합니다. 보통 /dev/ttyUSB# 등으로 설정되어있습니다.
+먼저 USB to Serial 포트를 PC에 연결하고 시리얼포트의 경로를 확인합니다. 보통 /dev/ttyUSB# 등으로 설정되어있습니다. (라즈베리파이에서 내장 uart 포트인 /dev/ttyS0를 사용하는경우 제외)
 
 복수의 USB to Serial 포트가 연결되어있는 경우 연결 순서에 따라 해당 번호(#)가 바뀌므로 /etc/udev/rules.d 에서 경로를 지정할 필요가 있습니다.
 

@@ -4,7 +4,7 @@
    <arg name="multi_robot_name" default="robot"/>
    <arg name="set_run_rviz" default="0"/>
    <arg name="set_port" default="/dev/ttyMotor"/>
-   <arg name="set_joy_en" default="1"/>
+   <arg name="set_joy_en" default="0"/>
 <!-- Launch R-1 default -->
       <node respawn="true" pkg="joy" type="joy_node" name="teleop_joy"/>
       <include file="$(find omoros)/launch/includes/r1_description.launch.xml">

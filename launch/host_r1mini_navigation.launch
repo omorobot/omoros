@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+   <arg name="map_file" default="$(find omoros)/navigation/maps/map.yaml"/>
+   <arg name="multi_robot_name" default=""/>
+   <arg name="move_forward_only" default="false"/>
+
+   <include file="$(find omoros)/launch/includes/r1mini_description.launch.xml">  
+   </include>
+
+   <node respawn="true" pkg="joy" type="joy_node" name="teleop_joy"/>
+   <node pkg="tf" type="static_transform_publisher" name="map_to_odom" 
+         args="0.0 0.0 0.0 0 0 0.0 /map /odom 40" />
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_left_link" 
+         args="0.0  0.085 0.0335 0.0 0.0 0.0 /base_link /wheel_left_link 40" />
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_wheel_right_link" 
+         args="0.0 -0.085 0.0335 0.0 0.0 0.0 /base_link /wheel_right_link 40" />
+   <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" 
+         args="0.0 0.0 0.2 0.0 0.0 0.0 /base_link /laser_frame 40" />
+
+   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+      <param name="publish_frequency" type="double" value="50.0" />
+      <param name="tf_prefix" value="$(arg multi_robot_name)"/>
+   </node>
+
+  <!-- Launch gmapping -->        
+  <include file="$(find omoros)/launch/gmapping.launch" />
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+   
+  <!-- AMCL -->
+  <include file="$(find omoros)/launch/amcl.launch"/>
+
+  <!-- move_base -->
+  <include file="$(find omoros)/launch/move_base.launch">
+    <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+  </include>
+
+   <node pkg="rviz" type="rviz" name="rviz" args="-d $(find omoros)/navigation/rviz/omoros_navigation.rviz" />
+</launch>
