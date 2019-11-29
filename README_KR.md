@@ -181,7 +181,7 @@ Host PC에서 터미널을 열고 SSH를 통해 타겟에 접속한 후 다음�
 ```
 export ROS_MASTER_URI=http://<PC의 IP 주소>:11311
 export ROS_IP=<로봇의 IP 주소>
-'''
+```
 이제 roslaunch 명령어로 drive_r1mini.launch를 실행합니다.
 ```
 $ roslaunch omoros drive_r1mini.launch
@@ -216,6 +216,7 @@ $ rostopic list
 /motor/status
 /odom
 ```
+
 R1Command 메세지는 삭제되고 cmd_vel 명령으로 대체되었습니다.
 
 **Subscribed message**
