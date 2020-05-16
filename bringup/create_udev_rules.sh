@@ -5,7 +5,7 @@ echo "This script copies a udev rule to /etc/udev/rules.d/ to fix serial port pa
 echo "to /dev/ttyMotor for omoros driver."
 echo ""
 
-sudo cp `rospack find omoros`99-omoros.rules /etc/udev/rules.d/
+sudo cp `rospack find omoros`/bringup/99-omoros.rules /etc/udev/rules.d/
 
 echo ""
 echo "Reload rules"
