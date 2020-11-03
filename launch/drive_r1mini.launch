@@ -3,7 +3,7 @@
 <launch>
    <arg name="multi_robot_name" default="robot"/>
    <arg name="set_run_rviz" default="0"/>
-   <arg name="set_port" default="/dev/ttyS0"/>
+   <arg name="set_port" default="/dev/ttyTHS1"/>
    <arg name="set_joy_en" default="1"/>
    <arg name="set_remote" default="1"/>
    <arg name="set_ydlidar" default="0"/>

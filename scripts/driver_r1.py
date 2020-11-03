@@ -123,7 +123,7 @@ class Robot:
       print "In Auto mode"
    isArrowMode = False  # Whether to control robo with arrow key or not
    arrowCon = ArrowCon
-   
+   isHeadLightOn = False   # Whether to turn on/off headlight
    #initialize data
    cmd = Command
    enc_L = 0.0          # Left wheel encoder count from QENCOD message
@@ -197,15 +197,24 @@ class Robot:
          self.resetODO()
          sleep(0.05)
          self.reset_odometry()
-         self.setREGI(0,'QENCOD')
-         sleep(0.05)
-         self.setREGI(1,'QODO')
+         if self.param_modelName == "mini":
+            self.setREGI(0,'ENCOD')
+            sleep(0.05)
+            self.setREGI(1,'ODO')
+            sleep(0.05)
+            self.setREGI(2,'DIFFV')
+            sleep(0.05)
+            self.setREGI(3,'POSE')
+         else :
+            self.setREGI(0,'QENCOD')
+            sleep(0.05)
+            self.setREGI(1,'QODO')
          sleep(0.05)
          self.setREGI(2,'QDIFFV')
          sleep(0.05)
-	 self.setREGI(3,'0')
+	 #self.setREGI(3,'0')
          sleep(0.05)
-	 self.setREGI(4,'0')
+	 #self.setREGI(4,'0')
          #self.setREGI(3,'QVW')
          #sleep(0.05)
          #self.setREGI(4,'QRPM')
@@ -248,10 +257,12 @@ class Robot:
          packet = reader.split(",")
          try:
             header = packet[0].split("#")[1]
-            if header.startswith('QVW'):
+            if self.param_modelName == "r1":
+               header[1:]
+            if header.startswith('VW'):
                self.vel = int(packet[1])
                self.rot = int(packet[2])
-            elif header.startswith('QENCOD'):
+            elif header.startswith('ENCOD'):
                enc_L = int(packet[1])
                enc_R = int(packet[2])
                if self.enc_cnt == 0:
@@ -264,17 +275,22 @@ class Robot:
                self.pub_enc_r.publish(Float64(data=self.enc_R))
                self.pose = self.updatePose(self.pose, self.enc_L, self.enc_R)
                #print('Encoder:L{:.2f}, R:{:.2f}'.format(self.enc_L, self.enc_R))
-            elif header.startswith('QODO'):
+            elif header.startswith('ODO'):
                self.odo_L = float(packet[1])*self.config.encoder.Dir
                self.odo_R = float(packet[2])*self.config.encoder.Dir
                #print('Odo:{:.2f}mm,{:.2f}mm'.format(self.odo_L, self.odo_R))
-            elif header.startswith('QRPM'):
+            elif header.startswith('RPM'):
                self.RPM_L = int(packet[1])
                self.RPM_R = int(packet[2])
                #print('RPM:{:.2f}mm,{:.2f}mm'.format(self.RPM_L, self.RPM_R))
-            elif header.startswith('QDIFFV'):
+            elif header.startswith('DIFFV'):
                self.speedL = int(packet[1])
                self.speedR = int(packet[2])
+            elif header.startswith('POSE'):
+               roll = float(packet[1])
+               pitch = float(packet[2])
+               yaw = float(packet[3])
+               print('RPY:{:.2f},{:.2f},{:.2f}'.format(roll, pitch, yaw))
          except:
             pass
          status_left = R1MotorStatus(low_voltage = 0, overloaded = 0, power = 0,
@@ -300,7 +316,14 @@ class Robot:
          else:
              self.isAutoMode = False
              print "In Manual mode"
-             
+      if (newJoyButtons[5]==1) and (newJoyButtons[5]!=self.joyButtons[5]):
+         if self.isHeadLightOn!= True:
+             self.isHeadLightOn = True
+             print "Headlight ON"
+         else:
+             self.isHeadLightOn = False
+             print "Headlight OFF"
+         self.setHeadlight(self.isHeadLightOn)       
       if (newJoyButtons[10]==1) and (newJoyButtons[10]!=self.joyButtons[10]):
          if self.isArrowMode!= True:
              self.isArrowMode = True
@@ -537,19 +560,41 @@ class Robot:
          self.ser.write(cmd+"\r"+"\n")
                     
    def setREGI(self, param1, param2):
-      msg = "$SREGI,"+str(param1)+','+param2
+      if self.param_modelName == "mini":
+         msg = "$CREGI,"+str(param1)+','+param2      
+      else :
+         msg = "$SREGI,"+str(param1)+','+param2
+      print msg
       self.ser.write(msg+"\r"+"\n")
         
    def setSPERI(self, param):
-      msg = "$SPERI,"+str(param)
+      if self.param_modelName == "mini":
+         msg = "$CPERI,"+str(param)
+      else :
+         msg = "$SPERI,"+str(param)
+      print msg
       self.ser.write(msg+"\r"+"\n")
 
    def setPEEN(self, param):
-      msg = "$SPEEN,"+str(param)
+      if self.param_modelName == "mini":
+         msg = "$CPEEN,"+str(param)
+      else :
+         msg = "$SPEEN,"+str(param)
+      print msg
       self.ser.write(msg+"\r"+"\n")
      
    def resetODO(self):
-      self.ser.write("$SODO\r\n")
+      if self.param_modelName=="mini":
+         self.ser.write("$CODO,0\r\n");
+      else :
+         self.ser.write("$SODO\r\n")
+
+   def setHeadlight(self, param):
+      if param == True:
+         msg = "$CHDLT,1"
+      else :
+         msg = "$CHDLT,0"
+      self.ser.write(msg+"\r"+"\n")
         
 if __name__ == '__main__':
 
