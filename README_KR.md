@@ -1,3 +1,8 @@
+# 주의
+
+OMOROS 프로젝트는 보다 나은 SLAM 주행 성능과 안정성을 확보한 다음 프로젝트로 대체되었습니다. [https://github.com/omorobot/omo_r1](https://github.com/omorobot/omo_r1)  
+이 프로젝트는 기록을 위해 남겨둡니다.
+
 # OMOROS
 
 오모로봇 제품군의 ROS 지원 드라이버 및 네비게이션 패키지 입니다.
