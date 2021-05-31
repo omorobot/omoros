@@ -1,3 +1,9 @@
+# NOTICE!! 
+
+Please note that OMOROS project has become depricated and all support and developments are moved to [https://github.com/omorobot/omo_r1](https://github.com/omorobot/omo_r1)
+which gives better and stable SLAM navigation with YD-Lidar.  
+
+
 # OMOROS
 
 This project contains ROS support driver and navigation packages for OMOROBOT's research platform R-1 and R-1 mini.
